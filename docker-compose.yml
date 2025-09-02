@@ -3,16 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - "--no-cache"
     restart: always
     ports:
-      - "8002:5173"
+      - "3000:80"
     container_name: deco_site_frontend
-    image: deco_site_frontend
-    secrets:
-      - secret_env_production
-
-secrets:
-  secret_env_production:
-    file: .env.production
+    environment:
+      - NODE_ENV=production
