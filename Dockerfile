@@ -21,27 +21,17 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# For security, do not copy the production environment variables file here
-# Use the Docker Secrets functionality in the docker-compose.yml
-
 # Build the production Vite application
-RUN npm run build
+FROM nginx:stable-alpine AS runner
 
-# Production image
-FROM base AS runner
-WORKDIR /app
+# Copy the built files to nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Set the production environment
-ENV NODE_ENV production
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy the output files from the build
-COPY --from=builder /app/dist ./dist
+# Expose port 80
+EXPOSE 80
 
-# Install serve to serve the application
-RUN npm install -g serve
-
-# Expose the port on which the application will run
-EXPOSE 5173
-
-# Command to run the application
-CMD ["serve", "-s", "dist", "-l", "5173"];
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
