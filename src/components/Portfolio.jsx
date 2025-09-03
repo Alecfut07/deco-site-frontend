@@ -69,10 +69,68 @@ const Portfolio = () => {
 
                 {/* Search and Filter Controls */}
                 <motion.div
-                    
+                    className="mb-12"
+                    initial="initial"
+                    whileInView="animate"
+                    viewport={{ once: true }}
+                    vairants={fadeInUp}
                 >
-                    <form></form>
+                    <form onSubmit={handleSearch} className="mb-8">
+                        <div className="flex max-w-lg mx-auto bg-white border-2 border-gray-200 rounded-xl overflow-hidden shadow-lg">
+                            <Search size={20} className="m-4 text-gray-500" />
+                            <input 
+                                type="text"
+                                placeholder="Search projects..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="flex-1 px-4 py-4 text-lg outline-none"
+                            />
+                            <button type="submit" className="bg-primary-500 text-white px-6 py-4 font-medium hover:bg-primary-600 transition-colors">
+                                Search
+                            </button>
+                        </div>
+                    </form>
+
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+                        <div className="flex flex-wrap gap-2 justify-center">
+                            <button
+                                className={`px-6 py-2 rounded-full font-medium transition-all ${
+                                    selectedCategory === ''
+                                        ? 'bg-primary-500 text-white'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                                onClick={() => handleCategoryFilter('')}
+                            >
+                                All
+                            </button>
+                            {categories.map((category) => (
+                                <button
+                                    key={category.id}
+                                    className={`px-6 py-2 rounded full font-medium transition-all ${
+                                        selectedCategory === category.slug
+                                            ? 'bg-primary-500 text-white'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                    onClick={() => handleCategoryFilter(category.slug)}
+                                >
+                                    {category.name}
+                                </button>
+                            ))}
+                        </div>
+
+                        {(searchQuery || selectedCategory) && (
+                            <button
+                                onClick={clearFilters}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                                <X size={16} />
+                                Clear Filters
+                            </button>
+                        )}
+                    </div>
                 </motion.div>
+
+                {/* Portfolio Grid */}
             </div>
         </section>
     )
