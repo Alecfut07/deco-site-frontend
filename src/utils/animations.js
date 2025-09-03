@@ -30,3 +30,12 @@ export const slideInRight = {
     animate: { x: 0, opacity: 1 },
     transition: { duration: 0.5, ease: "easeOut" }
 };
+
+// Stagger animation for lists
+export const staggerChildren = {
+    animate: {
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
