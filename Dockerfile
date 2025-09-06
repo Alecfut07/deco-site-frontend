@@ -22,6 +22,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build the production Vite application
+RUN npm run build
+
+# Production stage
 FROM nginx:stable-alpine AS runner
 
 # Copy the built files to nginx
