@@ -131,7 +131,57 @@ const Portfolio = () => {
                 </motion.div>
 
                 {/* Portfolio Grid */}
+                {portfolioLoading ? (
+                    <div className="text-center py-12">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+                        <p className="mt-4 text-gray-600">Loading portfolio...</p>
+                    </div>
+                ) : portfolioError ? (
+                    <div className="text-center py-12">
+                        <p className="text-red-600">Error loading portfolio. Please try again.</p>
+                    </div>
+                ) : portfolioItems.length > 0 ? (
+                    <>
+                        <motion.div
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12"
+                            initial="initial"
+                            animate="animate"
+                            variants={staggerChildren}
+                        >
+                            <AnimatePresence>
+                                {portfolioItems.map((item) => (
+                                    <motion.div
+                                        key={item.id}
+                                        className="group cursor-pointer"
+                                        variants={fadeInUp}
+                                        whileHover={{ y: -5 }}
+                                        transition={{ duration: 0.2 }}
+                                        onClick={() => openLightbox(item)}
+                                    >
+                                        <div className="relative aspect-[4/3] overflow-hidden rounded-xl shadow-lg group-hover:shadow-xl transition-shadow">
+                                            <img 
+                                                src={item.image}
+                                                alt={item.title} 
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="absolute bottom-4 left-4 right-4 text-white">
+                                                    <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
+                                                    <p className="text-sm opacity-80">{item.category?.name}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                        </motion.div>
+                    </>
+                ) : (
+                    <div></div>
+                )}
             </div>
+
+            {/* Image Lightbox */}
         </section>
     )
 }
