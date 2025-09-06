@@ -1,6 +1,5 @@
 import { motion } from 'motion';
 import { Phone, MapPin, Clock } from 'lucide-react';
-import { fadeInUp, staggerChildren } from '../utils/animations';
 
 const Hero = () => {
     return (
@@ -13,27 +12,33 @@ const Hero = () => {
             <div className="container relative z-10">
                 <motion.div
                     className="text-center max-w-4xl mx-auto"
-                    initial="initial"
-                    animate="animate"
-                    variants={staggerChildren}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    variants={{ duration: 0.8 }}
                 >
                     <motion.h1
                         className="text-5xl md:text-6xl font-bold mb-6"
-                        variants={fadeInUp}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
                     >
                         Professional House Decoration Services
                     </motion.h1>
 
                     <motion.p
                         className="text-xl md:text-2xl mb-8 opacity-90 leading-relaxed"
-                        variants={fadeInUp}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.4 }}
                     >
                         Transforming homes iwth over 10 years of experience and thousandsof satisfied customers
                     </motion.p>
 
                     <motion.div
                         className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
-                        variants={fadeInUp}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.6 }}
                     >
                         <motion.button
                             className="btn-primary"
@@ -54,7 +59,9 @@ const Hero = () => {
 
                         <motion.div
                             className="flex flex-col sm:flex-row justify-center gap-6 sm:gap-8"
-                            variants={fadeInUp}
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.8 }}
                         >
                             <div className="flex items-center justify-center gap-2">
                                 <Phone size={20} />
