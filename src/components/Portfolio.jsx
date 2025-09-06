@@ -216,6 +216,16 @@ const Portfolio = () => {
             </div>
 
             {/* Image Lightbox */}
+            <AnimatePresence>
+                {showLightbox && selectedImage && (
+                    <ImageLightbox
+                        item={selectedImage}
+                        onClose={closeLightbox}
+                    />
+                )}
+            </AnimatePresence>
         </section>
-    )
-}
+    );
+};
+
+export default Portfolio;
