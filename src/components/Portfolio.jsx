@@ -175,9 +175,43 @@ const Portfolio = () => {
                                 ))}
                             </AnimatePresence>
                         </motion.div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <motion.div
+                                className="flex justify-center items-center gap-4"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.3 }}
+                            >
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <ChevronLeft size={20} />
+                                    Previous
+                                </button>
+
+                                <div className="px-4 py-2 bg-primary-500 text-white rounded-lg font-medium">
+                                    Page {currentPage} of {totalPages}
+                                </div>
+
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Next
+                                    <ChevronRight size={20} />
+                                </button>
+                            </motion.div>
+                        )}
                     </>
                 ) : (
-                    <div></div>
+                    <div className="text-center py-12">
+                        <p className="text-gray-600">No portfolio items found. Try adjusting your search or filters.</p>
+                    </div>
                 )}
             </div>
 
