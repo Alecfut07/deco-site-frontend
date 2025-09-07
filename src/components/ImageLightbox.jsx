@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
 const ImageLightbox = ({ item, onClose }) => {

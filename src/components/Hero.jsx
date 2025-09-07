@@ -1,4 +1,4 @@
-import { motion } from 'motion';
+import { motion } from 'motion/react';
 import { Phone, MapPin, Clock } from 'lucide-react';
 
 const Hero = () => {

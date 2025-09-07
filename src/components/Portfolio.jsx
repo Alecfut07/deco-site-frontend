@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Search, Filter, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useSearchAndFilter, useCategories } from "../services/api";
 import { fadeInUp, staggerChildren, hoverScale } from "../utils/animations";
