@@ -1,5 +1,3 @@
-import { animate, stagger, tmieline } from 'motion';
-
 // Common animation variants
 export const fadeInUp = {
     initial: { opacity: 0, y: 20 },
