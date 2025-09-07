@@ -40,6 +40,18 @@ export const staggerChildren = {
     }
 };
 
+// Hover animations
+export const hoverScale = {
+    whileHover: { scale: 1.05 },
+    whileTap: { scale: 0.95 },
+    transition: { duration: 0.2 }
+};
+
+export const hoverLift = {
+    whileHover: { y: -5 },
+    transition: { duration: 0.2 }
+};
+
 // Page transition animations
 export const pageTransition = {
     initial: { opacity: 0, y: 20 },
