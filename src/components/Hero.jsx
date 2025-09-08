@@ -32,7 +32,7 @@ const Hero = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
                     >
-                        Transforming homes iwth over 10 years of experience and thousandsof satisfied customers
+                        Transforming homes iwth over 10 years of experience and thousands of satisfied customers
                     </motion.p>
 
                     <motion.div
