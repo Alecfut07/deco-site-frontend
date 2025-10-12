@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 
 // Configure base URL - adjust this to match Django backend
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -10,6 +10,13 @@ const api = axios.create({
         'Content-Type': 'application/json',
     },
 });
+
+// Helper function to get full image URL
+export const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `${API_BASE_URL}${path}`;
+};
 
 // Portfolio Items API with TanStack Query
 export const usePortfolioItems = (page = 1, pageSize = 12) => {
