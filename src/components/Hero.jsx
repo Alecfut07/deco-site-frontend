@@ -1,11 +1,13 @@
 import { motion } from 'motion/react';
 import { Phone, MapPin, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useBusinessInfo } from "../services/api";
 
 const Hero = () => {
+    const { data: businessInfo, isLoading } = useBusinessInfo();
+    
     return (
         <section id="home" className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 text-white overflow-hidden">
-            {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
                 <div className="absolute inset-0 bg-black/20"></div>
             </div>
@@ -23,7 +25,7 @@ const Hero = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
                     >
-                        Professional House Decoration Services
+                        {businessInfo?.company_name || 'Ortega Reyes Remodeling and Restoration'}
                     </motion.h1>
 
                     <motion.p
@@ -32,7 +34,7 @@ const Hero = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
                     >
-                        Transforming homes iwth over 10 years of experience and thousands of satisfied customers
+                        {businessInfo?.tagline || 'Quality craftsmanship for 25 years'}
                     </motion.p>
 
                     <motion.div
@@ -63,18 +65,26 @@ const Hero = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.8 }}
                         >
-                            <div className="flex items-center justify-center gap-2">
-                                <Phone size={20} />
-                                <span>(555) 123-4567</span>
-                            </div>
-                            <div className="flex items-center justify-center gap-2">
-                                <MapPin size={20} />
-                                <span>Your City, State</span>
-                            </div>
-                            <div className="flex items-center justify-center gap-2">
-                                <Clock size={20} />
-                                <span>Mon-Fri: 8AM - 6PM</span>
-                            </div>
+                            {businessInfo?.phone && (
+                                <div className="flex items-center justify-center gap-2">
+                                    <Phone size={20} />
+                                    <span>{businessInfo.phone}</span>
+                                </div>
+                            )}
+                            
+                            {businessInfo?.address && (
+                                <div className="flex items-center justify-center gap-2">
+                                    <MapPin size={20} />
+                                    <span>{businessInfo.address}</span>
+                                </div>
+                            )}
+                            
+                            {businessInfo?.years_experience && (
+                                <div className="flex items-center justify-center gap-2">
+                                    <Clock size={20} />
+                                    <span>{businessInfo.years_experience} Years of Experience</span>
+                                </div>
+                            )}
                         </motion.div>
                     </motion.div>
                 </motion.div>
