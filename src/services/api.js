@@ -22,62 +22,64 @@ export const getImageUrl = (path) => {
 export const usePortfolioItems = (page = 1, pageSize = 12) => {
     return useQuery({
         queryKey: ['portfolio-items', page, pageSize],
-        queryFn: () => api.get(`/portfolio-items/?page=${page}&page_size=${pageSize}`).then(res => res.data),
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        queryFn: async () => {
+            const response = await api.get(`/api/portfolio-items/?page=${page}&page_size=${pageSize}`);
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000, // 5 minutes (matches backend cache)
     });
 };
 
 export const usePortfolioItem = (id) => {
     return useQuery({
         queryKey: ['portfolio_item', id],
-        queryFn: () => api.get(`/portfolio-items/${id}/`).then (res => res.data),
+        queryFn: async () => {
+            const response = await api.get(`/api/portfolio-items/${id}/`);
+            return response.data;
+        },
         enabled: !!id,
     });
 };
 
+// Search functionality
 export const useSearchPortfolioItems = (query, page = 1, pageSize = 12) => {
     return useQuery({
         queryKey: ['portfolio-search', query, page, pageSize],
-        queryFn: () => api.get(`/portfolio-items/search/?q=${encodeURIComponent(query)}&page=${page}&page_size=${pageSize}`).then(res => res.data),
+        queryFn: async () => {
+            const response = await api.get(`/api/gallery/search/?q=${encodeURIComponent(query)}&page=${page}&page_size=${pageSize}`);
+            return response.data;
+        },
         enabled: !!query && query.length > 2,
-        staleTime: 5 * 60 * 1000, // 2 minutes for search results
+        staleTime: 2 * 60 * 1000,
     });
 };
 
-export const useFilterPortfolioItems = (filters, page = 1, pageSize = 12) => {
+// Filter by category
+export const useFilterPortfolio = (category, page = 1, pageSize = 12) => {
     return useQuery({
-        queryKey: ['portfolio-filter', filters, page, pageSize],
-        queryFn: () => {
-            const params = new URLSearchParams({ page, page_size: pageSize });
-            Object.entries(filters).forEach(([key, value]) => {
-                if (value) params.append(key, value);
-            });
-            return api.get(`/portfolio-items/filter/?${params}`).then(res => res.data);
+        queryKey: ['portfolio-filter', category, page, pageSize],
+        queryFn: async () => {
+            const response = await api.get(`/api/gallery/filter/?category=${category}&page=${page}&page_size=${pageSize}`);
+            return response.data;
         },
-        enabled: Object.values(filters).some(value => value),
-    });
-};
-
-export const useSearchAndFilter = (query, filters, page = 1, pageSize = 12) => {
-    return useQuery({
-        queryKey: ['portfolio-combined', query, filters, page, pageSize],
-        queryFn: () => {
-            const params = new URLSearchParams({ page, page_size: pageSize });
-            if (query) params.append('q', query);
-            Object.entries(filters).forEach(([key, value]) => {
-                if (value) params.append(key, value);
-            });
-            return api.get(`/portfolio-items/combined/?${params}`).then(res => res.data);
-        },
-        enabled: !!query || Object.values(filters).some(value => value),
-    });
-};
-
-export const usePortfolioByCategory = (category, page = 1, pageSize = 12) => {
-    return useQuery({
-        queryKey: ['portfolio-category', category, page, pageSize],
-        queryFn: () => api.get(`/portfolio-items/by_category/?category=${category}&page=${page}&page_size=${pageSize}`).then(res => res.data),
         enabled: !!category,
+        staleTime: 5 * 60 * 1000,
+    });
+};
+
+// Combined search and filter
+export const useSearchAndFilter = (query, category, page = 1, pageSize = 12) => {
+    return useQuery({
+        queryKey: ['portfolio-combined', query, category, page, pageSize],
+        queryFn: async () => {
+            const params = new URLSearchParams({ page: page.toString(), page_size: pageSize.toString() });
+            if (query) params.append('q', query);
+            if (category) params.append('category', category);
+            const response = await api.get(`/api/gallery/combined/?${params}`);
+            return response.data;
+        },
+        enabled: !!query || !!category,
+        staleTime: 2 * 60 * 1000,
     });
 };
 
@@ -85,8 +87,11 @@ export const usePortfolioByCategory = (category, page = 1, pageSize = 12) => {
 export const useCategories = () => {
     return useQuery({
         queryKey: ['categories'],
-        queryFn: () => api.get('/categories/').then(res => res.data),
-        staleTime: 30 * 60 * 1000, // 30 minutes - categories don't change often
+        queryFn: async () => {
+            const response = await api.get('/categories/');
+            return response.data;
+        },
+        staleTime: 30 * 60 * 1000, // 30 minutes
     });
 };
 
@@ -94,57 +99,24 @@ export const useCategories = () => {
 export const useServices = () => {
     return useQuery({
         queryKey: ['services'],
-        queryFn: () => api.get('/services/').then(res => res.data),
+        queryFn: async () => {
+            const response = await api.get('/services/');
+            return response.data;
+        },
         staleTime: 30 * 60 * 1000, // 30 minutes - services don't change often
     });
 };
 
-// Legacy API functions (for backward compatibility)
-export const portfolioAPI = {
-    // Get all portfolio items with pagination
-    getPortfolioItems: (page = 1, pageSize = 12) =>
-        api.get(`/portfolio-items/?page=${page}&page_size=${pageSize}`),
-
-    // Get specific portfolio item
-    getPortfolioItem: (id) =>
-        api.get(`/portfolio-items/${id}/`),
-
-    // Search portfolio items
-    searchPortfolioItems: (query, page = 1, pageSize = 12) =>
-        api.get(`/portfolio-items/search/?q=${encodeURIComponent(query)}&page=${page}&page_size=${pageSize}`),
-
-    // Filter portfolio items
-    filterPortfolioItems: (filters, page = 1, pageSize = 12) => {
-        const params = new URLSearchParams({ page, page_size: pageSize });
-        Object.entries(filters).forEach(([key, value]) => {
-            if (value) params.append(key, value);
-        });
-        return api.get(`/portfolio-items/filter/?${params}`);
-    },
-
-    // Combined search and filter
-    searchAndFilter: (query, filters, page = 1, pageSize = 12) => {
-        const params = new URLSearchParams({ page, page_size: pageSize });
-        if (query) params.append('q', query);
-        Object.entries(filters).forEach(([key, value]) => {
-            if (value) params.append(key, value);
-        });
-        return api.get(`/portfolio-items/search-filter/?${params}`);
-    },
-
-    // Get portfolio items by category
-    getByCategory: (category, page = 1, pageSize = 12) => 
-        api.get(`/portfolio-items/by_category/?category=${category}&page=${page}&page_size=${pageSize}`),
-}
-
-// Categories API
-export const categoriesAPI = {
-    getCategories: () => api.get('/categories/'),
-};
-
-// Services API
-export const servicesAPI = {
-    getServices: () => api.get('/services/'),
+// Business Info API
+export const useBusinessInfo = () => {
+    return useQuery({
+        queryKey: ['business-info'],
+        queryFn: async () => {
+            const response = await api.get(`/api/business-info/`);
+            return response.data;
+        },
+        staleTime: 60 * 60 * 1000, // 1 hour
+    });
 };
 
 export default api;
