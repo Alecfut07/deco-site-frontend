@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { useSearchAndFilter, useCategories } from "../services/api";
+import { usePortfolioItems, useCategories, useSearchAndFilter, getImageUrl } from "../services/api";
 import ImageLightbox from "./ImageLightbox";
 
 const Portfolio = () => {
@@ -17,16 +17,33 @@ const Portfolio = () => {
 
     const pageSize = 12;
 
-    // Use TanStack Query hooks
+    // Fetch categories
     const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-    const {
-        data: portfolioData,
-        isLoading: portfolioLoading,
-        error: portfolioError,
-    } = useSearchAndFilter(searchQuery, { category: selectedCategory }, currentPage, pageSize);
+
+    // Determine which query to use based on filters
+    const hasFilters = searchQuery || selectedCategory;
     
-    const portfolioItems = portfolioData?.results || [];
-    const totalPages = Math.ceil((portfolioData?.count || 0) / pageSize);
+    // Use combined search/filter when filters are active
+    const {
+        data: filteredData,
+        isLoading: filteredLoading,
+        error: filteredError,
+    } = useSearchAndFilter(searchQuery, selectedCategory, currentPage, pageSize);
+    
+    // Use regular portfolio items when no filters
+    const {
+        data: regularData,
+        isLoading: regularLoading,
+        error: regularError
+    } = usePortfolioItems(currentPage, pageSize);
+
+    // Determine which data to use
+    const portfolioData = hasFilters ? filteredData : regularData;
+    const isLoading = hasFilters ? filteredLoading : regularLoading;
+    const error = hasFilters ? filteredError : regularError;
+
+    const portfolioItems = portfolioData?.portfolio_items || [];
+    const pagination = portfolioData?.pagination || {};
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -106,9 +123,9 @@ const Portfolio = () => {
                             {categories.map((category) => (
                                 <Button
                                     key={category.id}
-                                    variant={selectedCategory === category.slug ? 'default' : 'outline'}
+                                    variant={selectedCategory === category.name ? 'default' : 'outline'}
                                     size="sm"
-                                    onClick={() => handleCategoryFilter(category.slug)}
+                                    onClick={() => handleCategoryFilter(category.name)}
                                 >
                                     {category.name}
                                 </Button>
@@ -130,12 +147,12 @@ const Portfolio = () => {
                 </motion.div>
 
                 {/* Portfolio Grid */}
-                {portfolioLoading ? (
+                {isLoading ? (
                     <div className="text-center py-12">
                         <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         <p className="mt-4 text-gray-600">Loading portfolio...</p>
                     </div>
-                ) : portfolioError ? (
+                ) : error ? (
                     <div className="text-center py-12">
                         <p className="text-red-600">Error loading portfolio. Please try again.</p>
                     </div>
@@ -153,23 +170,38 @@ const Portfolio = () => {
                                         key={item.id}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.4, delay: index * 0.1 }}
+                                        transition={{ duration: 0.4, delay: index * 0.05 }}
                                         whileHover={{ y: -5 }}
                                         className="cursor-pointer"
                                         onClick={() => openLightbox(item)}
                                     >
                                         <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                                            <div className="aspect-[4/3] overflow-hidden">
+                                            <div className="aspect-[4/3] overflow-hidden relative">
                                                 <img
-                                                    src={item.image}
+                                                    src={getImageUrl(item.thumbnail_url)}
                                                     alt={item.title}
                                                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                                                 />
+                                                {item.has_before_after && (
+                                                    <Badge className="absolute top-2 right-2 bg-blue-600">
+                                                        Before/After
+                                                    </Badge>
+                                                )}
                                             </div>
                                             <CardContent className="p-4">
-                                                <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-                                                {item.category && (
-                                                    <Badge variant="secondary">{item.category.name}</Badge>
+                                                <h3 className="font-semibold text-lg mb-2 line-clamp-1">{item.title}</h3>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {item.category && (
+                                                        <Badge variant="secondary">{item.category.name}</Badge>
+                                                    )}
+                                                    {item.service && (
+                                                        <Badge variant="outline">{item.service.name}</Badge>
+                                                    )}
+                                                </div>
+                                                {item.image_count > 0 && (
+                                                    <p className="text-sm text-gray-500 mt-2">
+                                                        +{item.image_count} more {item.image_count === 1 ? 'photo' : 'photos'}
+                                                    </p>
                                                 )}
                                             </CardContent>
                                         </Card>
@@ -179,7 +211,7 @@ const Portfolio = () => {
                         </motion.div>
 
                         {/* Pagination */}
-                        {totalPages > 1 && (
+                        {pagination.total_pages > 1 && (
                             <motion.div
                                 className="flex justify-center items-center gap-4"
                                 initial={{ opacity: 0 }}
@@ -189,20 +221,20 @@ const Portfolio = () => {
                                 <Button
                                     variant="outline"
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                    disabled={currentPage === 1}
+                                    disabled={!pagination.has_previous}
                                 >
                                     <ChevronLeft size={20} className="mr-2" />
                                     Previous
                                 </Button>
 
                                 <Badge variant="outline" className="px-4 py-2">
-                                    Page {currentPage} of {totalPages}
+                                    Page {pagination.page} of {pagination.total_pages}
                                 </Badge>
 
                                 <Button
                                     variant="outline"
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                    disabled={currentPage === totalPages}
+                                    onClick={() => setCurrentPage(prev => prev + 1)}
+                                    disabled={!pagination.has_next}
                                 >
                                     Next
                                     <ChevronRight size={20} className="ml-2" />
