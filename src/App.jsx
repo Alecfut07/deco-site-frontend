@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Header from './components/Navigation';
+import Navigation from './components/Navigation';
 import Hero from './components/Hero';
 import Services from './components/Services';
 import Portfolio from './components/Portfolio';
@@ -11,7 +11,7 @@ import './App.css'
 function App() {
   return (
     <div>
-      <Header />
+      <Navigation />
       <main>
         <Hero />
         <Services />
