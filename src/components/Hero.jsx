@@ -1,6 +1,7 @@
 import { Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBusinessInfo } from '../services/api';
+import heroBackground from '@/assets/hero-background.jpg';
 
 const Hero = () => {
     const { data: businessInfo, isLoading } = useBusinessInfo();
@@ -9,15 +10,11 @@ const Hero = () => {
         <section id="home" className="relative min-h-screen flex items-center">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
-                {businessInfo?.hero_background_url ? (
-                    <img 
-                        src={getImageUrl(businessInfo.hero_background_url)}
-                        alt="Beautiful home renovation"
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary to-primary/80"></div>
-                )}
+                <img 
+                    src={heroBackground}
+                    alt="Beautiful home renovation"
+                    className="w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/85 to-primary/70" />
             </div>
 
