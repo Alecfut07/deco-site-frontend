@@ -42,7 +42,7 @@ const Contact = () => {
                                     href={`tel:${businessInfo?.phone?.replace(/[^0-9]/g, '') || '7204343254'}`}
                                     className="text-primary hover:underline"
                                 >
-                                    {businessInfo?.phone || '(720) 424-3254'}
+                                    {businessInfo?.phone || '(720) 434-3254'}
                                 </a>
                             </CardContent>
                         </Card>
