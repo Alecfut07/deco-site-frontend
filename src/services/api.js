@@ -73,12 +73,12 @@ export const useSearchAndFilter = (query, category, page = 1, pageSize = 12) => 
         queryKey: ['portfolio-combined', query, category, page, pageSize],
         queryFn: async () => {
             const params = new URLSearchParams({ page: page.toString(), page_size: pageSize.toString() });
-            if (query) params.append('q', query);
-            if (category) params.append('category', category);
+            if (query && query.trim()) params.append('q', query.trim());
+            if (category && category.trim()) params.append('category', category.trim());
             const response = await api.get(`/api/gallery/combined/?${params}`);
             return response.data;
         },
-        enabled: !!query || !!category,
+        enabled: (!!query && query.trim().length > 0) || (!!category && category.trim().length > 0),
         staleTime: 2 * 60 * 1000,
     });
 };
@@ -88,7 +88,7 @@ export const useCategories = () => {
     return useQuery({
         queryKey: ['categories'],
         queryFn: async () => {
-            const response = await api.get('/categories/');
+            const response = await api.get('/api/categories/');
             return response.data;
         },
         staleTime: 30 * 60 * 1000, // 30 minutes
@@ -100,7 +100,7 @@ export const useServices = () => {
     return useQuery({
         queryKey: ['services'],
         queryFn: async () => {
-            const response = await api.get('/services/');
+            const response = await api.get('/api/services/');
             return response.data;
         },
         staleTime: 30 * 60 * 1000, // 30 minutes - services don't change often

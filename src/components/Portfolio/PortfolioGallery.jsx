@@ -9,7 +9,8 @@ import { usePortfolioItems, useCategories, useServices, useSearchAndFilter } fro
 
 const PortfolioGallery = () => {
     const [selectedItem, setSelectedItem] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchInput, setSearchInput] = useState(''); // Input value (updates immediately)
+    const [searchQuery, setSearchQuery] = useState(''); // Actual search query (debounced)
     const [category, setCategory] = useState('All');
     const [service, setService] = useState('All Services');
     const [page, setPage] = useState(1);
@@ -19,14 +20,28 @@ const PortfolioGallery = () => {
     const { data: categories = [] } = useCategories();
     const { data: services = [] } = useServices();
 
+    // Debounce search input - only update searchQuery after user stops typing for 500ms
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchQuery(searchInput);
+            setPage(1); // Reset to page 1 when search changes
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchInput]);
+
     // Determine which query to use
-    const hasFilters = searchQuery || category !== 'All' || service !== 'All Services';
+    const hasFilters = searchQuery || (category !== 'All' && category) || (service !== 'All Services' && service);
+
+    // Only pass category and service if they're not the default values
+    const activeCategory = category !== 'All' ? category : '';
+    const activeService = service !== 'All Services' ? service : '';
 
     const {
         data: filteredData,
         isLoading: filteredLoading,
         error: filteredError
-    } = useSearchAndFilter(searchQuery, category, page, pageSize);
+    } = useSearchAndFilter(searchQuery, activeCategory, page, pageSize);
 
     const {
         data: regularData,
@@ -46,24 +61,12 @@ const PortfolioGallery = () => {
     const serviceOptions = ['All Services', ...services.filter(s => s.is_active).map(s => s.name)];
 
     const handleClearFilters = () => {
+        setSearchInput('');
         setSearchQuery('');
         setCategory('All');
         setService('All Services');
         setPage(1);
     };
-
-    if (isLoading) {
-        return (
-            <section id="portfolio" className="py-20 bg-background">
-                <div className="container mx-auto px-4">
-                    <div className="text-center">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        <p className="mt-4 text-muted-foreground">Loading portfolio...</p>
-                    </div>
-                </div>
-            </section>
-        );
-    }
 
     if (error) {
         return (
@@ -96,12 +99,15 @@ const PortfolioGallery = () => {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                             <Input 
                                 placeholder="Search projects..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
                                 className="pl-10"
                             />
                         </div>
-                        <Select value={category} onValueChange={setCategory}>
+                        <Select value={category} onValueChange={(value) => {
+                            setCategory(value);
+                            setPage(1);
+                        }}>
                             <SelectTrigger className="w-full md:w-48">
                                 <SelectValue placeholder="Category" />
                             </SelectTrigger>
@@ -111,7 +117,10 @@ const PortfolioGallery = () => {
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Select value={service} onValueChange={setService}>
+                        <Select value={service} onValueChange={(value) => {
+                            setService(value);
+                            setPage(1);
+                        }}>
                             <SelectTrigger className="w-full md:w-48">
                                 <SelectValue placeholder="Service" />
                             </SelectTrigger>
@@ -121,7 +130,7 @@ const PortfolioGallery = () => {
                                 ))}
                             </SelectContent>
                         </Select>
-                        {(searchQuery || category !== 'All' || service !== 'All Services') && (
+                        {(searchInput || category !== 'All' || service !== 'All Services') && (
                             <Button variant="outline" onClick={handleClearFilters}>
                                 Clear Filters
                             </Button>
@@ -130,14 +139,30 @@ const PortfolioGallery = () => {
                 </div>
 
                 {/* Gallery Grid */}
-                {items.length > 0 ? (
-                    <PortfolioGrid items={items} onItemClick={setSelectedItem} />
-                ) : (
-                    <div className="text-center py-16">
-                        <p className="text-xl text-muted-foreground mb-4">No projects found</p>
-                        <Button onClick={handleClearFilters}>Clear Filters</Button>
-                    </div>
-                )}
+                <div className="relative">
+                    {isLoading && !portfolioData ? (
+                        // Initial load - show full loading spinner
+                        <div className="text-center py-16">
+                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <p className="mt-4 text-muted-foreground">Loading portfolio...</p>
+                        </div>
+                    ) : items.length > 0 ? (
+                        // Show grid with loading overlay if fetching new data
+                        <div className="relative">
+                            <PortfolioGrid items={items} onItemClick={setSelectedItem} />
+                            {isLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-sm rounded-lg z-10">
+                                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="text-center py-16">
+                            <p className="text-xl text-muted-foreground mb-4">No projects found</p>
+                            <Button onClick={handleClearFilters}>Clear Filters</Button>
+                        </div>
+                    )}
+                </div>
 
                 {/* Pagination */}
                 {pagination.total_pages > 1 && (

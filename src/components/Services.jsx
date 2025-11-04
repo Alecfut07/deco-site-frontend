@@ -32,7 +32,7 @@ const Services = () => {
     const categories = [...new Set(services.filter(s => s.is_active).map(s => s.category?.name))];
     const servicesByCategory = {};
     categories.forEach(cat => {
-        servicesByCategory[cat] = services.fitler(s => s.category?.name === cat && s.is_active);
+        servicesByCategory[cat] = services.filter(s => s.category?.name === cat && s.is_active);
     });
 
     return (
