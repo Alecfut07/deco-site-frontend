@@ -50,11 +50,14 @@ export const useSearchPortfolioItems = (query, page = 1, pageSize = 12) => {
     return useQuery({
         queryKey: ['portfolio-search', query, page, pageSize],
         queryFn: async () => {
-            const response = await api.get(`/api/gallery/search/?q=${encodeURIComponent(query)}&page=${page}&page_size=${pageSize}`);
+            const response = await api.get(
+                `/api/portfolio-items/search/?q=${encodeURIComponent(query)}&page=${page}&page_size=${pageSize}`
+            );
             return response.data;
         },
         enabled: !!query && query.length > 2,
         staleTime: 2 * 60 * 1000,
+        keepPreviousData: true,
     });
 };
 
