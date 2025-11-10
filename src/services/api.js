@@ -83,18 +83,24 @@ export const useFilterPortfolio = (category, service, page = 1, pageSize = 12) =
 };
 
 // Combined search and filter
-export const useSearchAndFilter = (query, category, page = 1, pageSize = 12) => {
+export const useSearchAndFilter = (query, category, service, page = 1, pageSize = 12) => {
     return useQuery({
-        queryKey: ['portfolio-combined', query, category, page, pageSize],
+        queryKey: ['portfolio-combined', query, category, service, page, pageSize],
         queryFn: async () => {
-            const params = new URLSearchParams({ page: page.toString(), page_size: pageSize.toString() });
-            if (query && query.trim()) params.append('q', query.trim());
-            if (category && category.trim()) params.append('category', category.trim());
-            const response = await api.get(`/api/gallery/combined/?${params}`);
+            const params = new URLSearchParams({ 
+                page: page.toString(), 
+                page_size: pageSize.toString() 
+            });
+            if (query) params.append('q', query);
+            if (category) params.append('category', category);
+            if (service) params.append('service', service);
+            
+            const response = await api.get(`/api/portfolio-items/combined/?${params.toString()}`);
             return response.data;
         },
-        enabled: (!!query && query.trim().length > 0) || (!!category && category.trim().length > 0),
+        enabled: !!query || !!category || !!service,
         staleTime: 2 * 60 * 1000,
+        keepPreviousData: true,
     });
 };
 
