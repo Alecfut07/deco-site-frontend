@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 // Configure base URL - adjust this to match Django backend
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -19,7 +19,9 @@ export const getImageUrl = (path) => {
 };
 
 // Portfolio Items API with TanStack Query
-export const usePortfolioItems = (page = 1, pageSize = 12) => {
+export const usePortfolioItems = (page = 1, pageSize = 12, options = {}) => {
+    const enabled = options.enabled ?? true;
+    
     return useQuery({
         queryKey: ['portfolio-items', page, pageSize],
         queryFn: async () => {
@@ -27,6 +29,8 @@ export const usePortfolioItems = (page = 1, pageSize = 12) => {
             return response.data;
         },
         staleTime: 5 * 60 * 1000, // 5 minutes (matches backend cache)
+        keepPreviousData: true,
+        enabled,
     });
 };
 
