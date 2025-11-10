@@ -62,15 +62,23 @@ export const useSearchPortfolioItems = (query, page = 1, pageSize = 12) => {
 };
 
 // Filter by category
-export const useFilterPortfolio = (category, page = 1, pageSize = 12) => {
+export const useFilterPortfolio = (category, service, page = 1, pageSize = 12) => {
     return useQuery({
-        queryKey: ['portfolio-filter', category, page, pageSize],
+        queryKey: ['portfolio-filter', category, service, page, pageSize],
         queryFn: async () => {
-            const response = await api.get(`/api/gallery/filter/?category=${category}&page=${page}&page_size=${pageSize}`);
+            const params = new URLSearchParams({
+                page: page.toString(),
+                page_size: pageSize.toString(),
+            });
+            if (category) params.append('category', category);
+            if (service) params.append('service', service);
+            
+            const response = await api.get(`/api/portfolio-items/filter/?${params.toString()}`);
             return response.data;
         },
-        enabled: !!category,
+        enabled: !!category || !!service,
         staleTime: 5 * 60 * 1000,
+        keepPreviousData: true,
     });
 };
 
