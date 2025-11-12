@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,73 +7,127 @@ import PortfolioGrid from './PortfolioGrid';
 import PortfolioModal from './PortfolioModal';
 import { usePortfolioItems, useCategories, useServices, useSearchAndFilter } from '../../services/api';
 
+const PAGE_SIZE = 12;
+
+const mapCollectionToOptions = (collection = [], allLabel) => {
+    const base = [{ label: allLabel, value: '' }];
+
+    return base.concat(
+        collection.map((entry) => ({
+            label: entry?.name ?? entry?.title ?? 'Unnamed',
+            value: entry?.slug ?? String(entry?.id ?? ''),
+        })),
+    );
+};
+
+const extractItems = (payload) => {
+    if (!payload) return [];
+    if (Array.isArray(payload.results)) return payload.results;
+    if (Array.isArray(payload.portfolio_items)) return payload.portfolio_items;
+    if (Array.isArray(payload.items)) return payload.items;
+    return [];
+};
+
+const getPaginationMeta = (payload, currentPage, pageSize) => {
+    if (!payload) {
+        return {
+            page: currentPage,
+            page_size: pageSize,
+            has_next: false,
+            has_previous: currentPage > 1,
+            total_pages: 1,
+            count: 0,
+        };
+    }
+
+    if (payload.pagination) return payload.pagination;
+    
+    const count = payload.count ?? extractItems(payload).length;
+    const totalPages = count ? Math.max(1, Math.ceil(count / pageSize)) : 1;
+
+    return {
+        page: payload.page ?? currentPage,
+        page_size: payload.page_size ?? pageSize,
+        has_next: payload.has_next ?? (payload.page ?? currentPage) < totalPages,
+        has_previous: payload.has_previous ?? (payload.page ?? currentPage) > 1,
+        total_pages: totalPages,
+        count,
+    };
+};
+
 const PortfolioGallery = () => {
-    const [selectedItem, setSelectedItem] = useState(null);
     const [searchInput, setSearchInput] = useState(''); // Input value (updates immediately)
     const [searchQuery, setSearchQuery] = useState(''); // Actual search query (debounced)
-    const [category, setCategory] = useState('All');
-    const [service, setService] = useState('All Services');
+    const [category, setCategory] = useState('');
+    const [service, setService] = useState('');
     const [page, setPage] = useState(1);
-    const pageSize = 12;
+    const [selectedItem, setSelectedItem] = useState(null);
 
     // Fetch data
-    const { data: categories = [] } = useCategories();
-    const { data: services = [] } = useServices();
+    const { data: categoriesData = [] } = useCategories();
+    const { data: servicesData = [] } = useServices();
 
-    // Debounce search input - only update searchQuery after user stops typing for 500ms
+    const categoryOptions = useMemo(() => mapCollectionToOptions(categoriesData, 'All Categories'), [categoriesData]);
+    const serviceOptions = useMemo(() => mapCollectionToOptions(servicesData, 'All Services'), [servicesData]);
+
+    // Debounce search input - only update searchQuery after user stops typing for 400ms
     useEffect(() => {
         const timer = setTimeout(() => {
-            setSearchQuery(searchInput);
+            setSearchQuery(searchInput.trim());
             setPage(1); // Reset to page 1 when search changes
-        }, 500);
+        }, 400);
 
         return () => clearTimeout(timer);
     }, [searchInput]);
 
     // Determine which query to use
-    const hasFilters = searchQuery || (category !== 'All' && category) || (service !== 'All Services' && service);
-
-    // Only pass category and service if they're not the default values
-    const activeCategory = category !== 'All' ? category : '';
-    const activeService = service !== 'All Services' ? service : '';
+    const hasFilters = Boolean(searchQuery || category || service);
 
     const {
         data: filteredData,
         isLoading: filteredLoading,
+        isFetching: filteredFetching,
         error: filteredError
-    } = useSearchAndFilter(searchQuery, activeCategory, page, pageSize);
+    } = useSearchAndFilter(searchQuery, category, service, page, PAGE_SIZE);
 
     const {
-        data: regularData,
-        isLoading: regularLoading,
-        error: regularError
-    } = usePortfolioItems(page, pageSize);
+        data: baseData,
+        isLoading: baseLoading,
+        isFetching: baseFetching,
+        error: baseError
+    } = usePortfolioItems(page, PAGE_SIZE, { enabled: !hasFilters });
 
-    // Use filtered or regular data
-    const portfolioData = hasFilters ? filteredData : regularData;
-    const isLoading = hasFilters ? filteredLoading : regularLoading;
-    const error = hasFilters ? filteredError : regularError;
+    const activeData = hasFilters ? filteredData : baseData;
+    const isLoading = hasFilters ? filteredLoading : baseLoading;
+    const isFetching = hasFilters ? filteredFetching : baseFetching;
+    const error = hasFilters ? filteredError : baseError;
 
-    const items = portfolioData?.portfolio_items || [];
-    const pagination = portfolioData?.pagination || {};
-
-    const categoryOptions = ['All', ...categories.map(c => c.name)];
-    const serviceOptions = ['All Services', ...services.filter(s => s.is_active).map(s => s.name)];
+    const items = useMemo(() => extractItems(activeData), [activeData]);
+    const pagination = useMemo(() => getPaginationMeta(activeData, page, PAGE_SIZE), [activeData, page]);
 
     const handleClearFilters = () => {
         setSearchInput('');
         setSearchQuery('');
-        setCategory('All');
-        setService('All Services');
+        setCategory('');
+        setService('');
         setPage(1);
+    };
+
+    const handlePageChange = (direction) => {
+        setPage((prev) => {
+            if (direction === 'next' && pagination.has_next) return prev + 1;
+            if (direction === 'prev' && pagination.has_previous) return Math.max(1, prev - 1);
+            return prev;
+        });
     };
 
     if (error) {
         return (
             <section id="portfolio" className="py-20 bg-background">
                 <div className="container mx-auto px-4">
-                    <div className="text-center">
-                        <p className="text-destructive">Error loading portfolio. Please try again.</p>
+                    <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-6 py-8 text-center">
+                        <p className="text-lg font-semibold text-destructive">We couldn't load the portfolio right now.</p>
+                        <p className="mt-2 text-sm text-muted-foreground">Please try again in a moment or refresh the page.</p>
                     </div>
                 </div>
             </section>
@@ -88,7 +142,7 @@ const PortfolioGallery = () => {
                         Our Work
                     </h2>
                     <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                        Explore our portfolio of stunning transformations
+                        Explore transformations across interiors, exteriors, and specialty finishes.
                     </p>
                 </div>
 
@@ -96,41 +150,55 @@ const PortfolioGallery = () => {
                 <div className="mb-8 space-y-4 animate-fade-in-up">
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" aria-hidden="true" />
                             <Input 
                                 placeholder="Search projects..."
                                 value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
+                                onChange={(event) => setSearchInput(event.target.value)}
                                 className="pl-10"
+                                aria-label="Search portfolio items"
                             />
                         </div>
-                        <Select value={category} onValueChange={(value) => {
-                            setCategory(value);
-                            setPage(1);
-                        }}>
-                            <SelectTrigger className="w-full md:w-48">
+
+                        <Select 
+                            value={category} 
+                            onValueChange={(value) => {
+                                setCategory(value);
+                                setPage(1);
+                            }}
+                        >
+                            <SelectTrigger className="w-full md:w-48" aria-label="Filter by category">
                                 <SelectValue placeholder="Category" />
                             </SelectTrigger>
                             <SelectContent>
-                                {categoryOptions.map(cat => (
-                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                {categoryOptions.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Select value={service} onValueChange={(value) => {
-                            setService(value);
-                            setPage(1);
-                        }}>
-                            <SelectTrigger className="w-full md:w-48">
+
+                        <Select 
+                            value={service} 
+                            onValueChange={(value) => {
+                                setService(value);
+                                setPage(1);
+                            }}
+                        >
+                            <SelectTrigger className="w-full md:w-48" aria-label="Filter by service">
                                 <SelectValue placeholder="Service" />
                             </SelectTrigger>
                             <SelectContent>
-                                {serviceOptions.map(svc => (
-                                    <SelectItem key={svc} value={svc}>{svc}</SelectItem>
+                                {serviceOptions.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        {(searchInput || category !== 'All' || service !== 'All Services') && (
+
+                        {(searchInput || category || service) && (
                             <Button variant="outline" onClick={handleClearFilters}>
                                 Clear Filters
                             </Button>
@@ -140,45 +208,55 @@ const PortfolioGallery = () => {
 
                 {/* Gallery Grid */}
                 <div className="relative">
-                    {isLoading && !portfolioData ? (
+                    {isLoading && !items.length ? (
                         // Initial load - show full loading spinner
                         <div className="text-center py-16">
-                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <div className="inline-block animate-spin rounded-full h-9 w-9 border-b-2 border-primary" />
                             <p className="mt-4 text-muted-foreground">Loading portfolio...</p>
                         </div>
-                    ) : items.length > 0 ? (
+                    ) : items.length ? (
                         // Show grid with loading overlay if fetching new data
                         <div className="relative">
                             <PortfolioGrid items={items} onItemClick={setSelectedItem} />
-                            {isLoading && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-sm rounded-lg z-10">
-                                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            {isFetching && (
+                                <div 
+                                    className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/70 backdrop-blur-sm"
+                                    aria-live="polite"
+                                    aria-label="Loading updated results"
+                                >
+                                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                                 </div>
                             )}
                         </div>
                     ) : (
                         <div className="text-center py-16">
-                            <p className="text-xl text-muted-foreground mb-4">No projects found</p>
-                            <Button onClick={handleClearFilters}>Clear Filters</Button>
+                            <p className="text-xl text-muted-foreground mb-4">No projects found with the current filters.</p>
+                            <Button variant="outline" onClick={handleClearFilters}>
+                                Reset Filters
+                            </Button>
                         </div>
                     )}
                 </div>
 
                 {/* Pagination */}
                 {pagination.total_pages > 1 && (
-                    <div className="mt-8 flex justify-center gap-2">
+                    <div className="mt-10 flex items-center justify-center gap-3">
                         <Button
                             variant="outline"
-                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            onClick={() => handlePageChange('prev')}
                             disabled={!pagination.has_previous}
+                            aria-label="Previous page"
                         >
                             Previous
                         </Button>
-                        <span className="flex items-center px-4">Page {pagination.page} of {pagination.total_pages}</span>
+                        <span className="text-sm text-muted-foreground">
+                            Page {pagination.page} of {pagination.total_pages}
+                        </span>
                         <Button
                             variant="outline"
-                            onClick={() => setPage(p => p + 1)}
+                            onClick={() => handlePageChange('next')}
                             disabled={!pagination.has_next}
+                            aria-label="Next page"
                         >
                             Next
                         </Button>
