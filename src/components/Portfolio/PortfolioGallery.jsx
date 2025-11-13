@@ -9,16 +9,18 @@ import { usePortfolioItems, useCategories, useServices, useSearchAndFilter } fro
 
 const PAGE_SIZE = 12;
 
-const mapCollectionToOptions = (collection = [], allLabel) => {
-    const base = [{ label: allLabel, value: '' }];
+const mapCollectionToOptions = (collection = [], allLabel) => 
+    [{ label: allLabel, value: 'all' }].concat(
+        collection.map((entry, index) => {
+            const label = entry?.name ?? entry?.title ?? "Unnamed";
+            const slug = entry?.slug?.trim();
+            const id = entry?.id != null ? String(entry.id) : `index-${index}`;
+            // ensure every option has a non-empty value
+            const value = slug || id;
 
-    return base.concat(
-        collection.map((entry) => ({
-            label: entry?.name ?? entry?.title ?? 'Unnamed',
-            value: entry?.slug ?? String(entry?.id ?? ''),
-        })),
+            return { label, value };
+        }),
     );
-};
 
 const extractItems = (payload) => {
     if (!payload) return [];
@@ -161,9 +163,9 @@ const PortfolioGallery = () => {
                         </div>
 
                         <Select 
-                            value={category} 
+                            value={category || 'all-categories'} 
                             onValueChange={(value) => {
-                                setCategory(value);
+                                setCategory(value === 'all-categories' ? '' : value);
                                 setPage(1);
                             }}
                         >
@@ -171,6 +173,7 @@ const PortfolioGallery = () => {
                                 <SelectValue placeholder="Category" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="all-categories">All Categories</SelectItem>
                                 {categoryOptions.map((option) => (
                                     <SelectItem key={option.value} value={option.value}>
                                         {option.label}
@@ -180,9 +183,9 @@ const PortfolioGallery = () => {
                         </Select>
 
                         <Select 
-                            value={service} 
+                            value={service || 'all-services'} 
                             onValueChange={(value) => {
-                                setService(value);
+                                setService(value === 'all-services' ? '' : value);
                                 setPage(1);
                             }}
                         >
@@ -190,6 +193,7 @@ const PortfolioGallery = () => {
                                 <SelectValue placeholder="Service" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="all-services">All Services</SelectItem>
                                 {serviceOptions.map((option) => (
                                     <SelectItem key={option.value} value={option.value}>
                                         {option.label}
