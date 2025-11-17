@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./createAuthContext";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -9,13 +12,20 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch("/api/auth/user/", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/user/`, {
         credentials: "include",
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setUser(data);
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const data = await response.json();
+          setUser(data);
+        } else {
+          // Response is not JSON (likely HTML error page)
+          console.warn("Auth check returned non-JSON response");
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
@@ -28,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (username, password) => {
-    const response = await fetch("/api/auth/login/", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -36,7 +46,13 @@ export const AuthProvider = ({ children }) => {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
+      const contentType = response.headers.get("content-type");
+      let error;
+      if (contentType && contentType.includes("application/json")) {
+        error = await response.json().catch(() => ({}));
+      } else {
+        error = { detail: "Login failed" };
+      }
       throw new Error(error.detail || "Login failed");
     }
 
@@ -47,7 +63,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout/", {
+      await fetch(`${API_BASE_URL}/api/auth/logout/`, {
         method: "POST",
         credentials: "include",
       });
