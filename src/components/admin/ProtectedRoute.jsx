@@ -1,14 +1,8 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
 
-const DEV_BYPASS = false; // flip to true only while designing the UI
-
 export const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-
-  if (DEV_BYPASS) {
-    return <>{children}</>;
-  }
 
   if (loading) {
     return (
