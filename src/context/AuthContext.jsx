@@ -1,7 +1,6 @@
-import { createContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const AuthContext = createContext(undefined);
+import { AuthContext } from "./createAuthContext";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
