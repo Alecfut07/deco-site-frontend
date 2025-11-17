@@ -1,41 +1,52 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import Navigation from './components/Navigation';
-import Hero from './components/Hero';
-import Services from './components/Services';
-import PortfolioGallery from './components/Portfolio/PortfolioGallery';
-import About from './components/About';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthContext";
+import { ProtectedRoute } from "@/components/admin/ProtectedRoute";
+import AdminLayout from "@/components/admin/AdminLayout";
+import Index from "@/pages/Index";
+import Login from "@/pages/Login";
+import NotFound from "@/pages/NotFound";
+import Dashboard from "@/pages/admin/Dashboard";
+import PortfolioItems from "@/pages/admin/PortfolioItems";
+import PortfolioItemForm from "@/pages/admin/PortfolioItemForm";
+import PortfolioItemMedia from "@/pages/admin/PortfolioItemMedia";
+import Categories from "@/pages/admin/Categories";
+import Services from "@/pages/admin/Services";
+import BusinessInfo from "@/pages/admin/BusinessInfo";
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-function App() {
+const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen">
-        <Navigation />
-        <Hero />
-        <Services />
-        <PortfolioGallery />
-        <About />
-        <Contact />
-        <Footer />
-      </div>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="portfolio" element={<PortfolioItems />} />
+            <Route path="portfolio/new" element={<PortfolioItemForm />} />
+            <Route path="portfolio/:id" element={<PortfolioItemForm />} />
+            <Route
+              path="portfolio/:id/media"
+              element={<PortfolioItemMedia />}
+            />
+            <Route path="categories" element={<Categories />} />
+            <Route path="services" element={<Services />} />
+            <Route path="business" element={<BusinessInfo />} />
+          </Route>
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
-}
+};
 
 export default App;
