@@ -125,7 +125,7 @@ const Services = () => {
               <CardTitle>{svc.name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p classname="text-sm text-muted-foreground">{svc.description}</p>
+              <p className="text-sm text-muted-foreground">{svc.description}</p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
