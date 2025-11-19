@@ -56,9 +56,8 @@ export const AuthProvider = ({ children }) => {
       throw new Error(error.detail || "Login failed");
     }
 
-    const data = await response.json();
-    setUser(data?.user || null);
-    navigate("/admin", { replace: true });
+    // After successful login, fetch the user data
+    await checkAuth();
   };
 
   const logout = async () => {
