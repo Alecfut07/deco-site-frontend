@@ -26,11 +26,18 @@ export const AuthProvider = ({ children }) => {
           console.warn("Auth check returned non-JSON response");
           setUser(null);
         }
+      } else if (response.status === 403 || response.status === 401) {
+        // User is not authenticated - this is expected, not an error
+        setUser(null);
       } else {
+        // Other error status
         setUser(null);
       }
     } catch (error) {
-      console.error("Failed to verify session", error);
+      // Only log actual network errors, not expected 403s
+      if (error.name !== "TypeError") {
+        console.error("Failed to verify session", error);
+      }
       setUser(null);
     } finally {
       setLoading(false);
