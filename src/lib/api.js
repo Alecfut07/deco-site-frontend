@@ -126,6 +126,13 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  updateCategory: (id, data) =>
+    apiRequest(`/api/admin/categories/${id}/`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }),
+
   deleteCategory: (id) =>
     apiRequest(`/api/admin/categories/${id}/`, {
       method: "DELETE",
