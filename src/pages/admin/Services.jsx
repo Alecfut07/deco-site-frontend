@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
-import { notify } from "@/utils/notify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { notify } from "@/utils/notify";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,9 +20,9 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 const Services = () => {
@@ -90,57 +90,62 @@ const Services = () => {
     }
   };
 
-  const openCreate = () => {
-    setEditingService({});
-    setFormData({ name: "", description: "" });
-  };
-
   const openEdit = (service) => {
     setEditingService(service);
     setFormData({
-      name: service.name || "",
-      description: service.description || "",
+      name: service.name,
+      description: service.description,
     });
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Services</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Services</h1>
           <p className="text-muted-foreground">
             Manage the services you offer.
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button
+          onClick={() => {
+            setEditingService({});
+            setFormData({ name: "", description: "" });
+          }}
+          className="w-full sm:w-auto"
+        >
+          <Plus className="w-4 h-4 mr-2" />
           New Service
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {services.map((svc) => (
           <Card key={svc.id}>
             <CardHeader>
               <CardTitle>{svc.name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-sm text-muted-foreground">{svc.description}</p>
-              <div className="flex gap-2">
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {svc.description}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => openEdit(svc)}
+                  className="flex-1"
                 >
-                  <Pencil className="mr-1 h-3 w-3" />
+                  <Pencil className="w-3 h-3 mr-1" />
                   Edit
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setDeleteId(svc.id)}
+                  className="flex-1"
                 >
-                  <Trash2 className="mr-1 h-3 w-3" />
+                  <Trash2 className="w-3 h-3 mr-1" />
                   Delete
                 </Button>
               </div>
@@ -155,13 +160,15 @@ const Services = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingService ? "Edit" : "New"} Service</DialogTitle>
+            <DialogTitle>
+              {editingService?.id ? "Edit" : "New"} Service
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="service-name">Name *</Label>
+              <Label htmlFor="name">Name *</Label>
               <Input
-                id="service-name"
+                id="name"
                 value={formData.name}
                 onChange={(event) =>
                   setFormData({ ...formData, name: event.target.value })
@@ -170,9 +177,9 @@ const Services = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="service-description">Description</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
-                id="service-description"
+                id="description"
                 row={3}
                 value={formData.description}
                 onChange={(event) =>
@@ -195,7 +202,7 @@ const Services = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm deletion</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the service.
+              This will permanently delete this service.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
