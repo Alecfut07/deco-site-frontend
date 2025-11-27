@@ -1,12 +1,18 @@
 import { NavLink } from "react-router-dom";
 import {
-  Briefcase,
-  FolderTree,
-  Image,
-  Info,
   LayoutDashboard,
+  Image,
+  FolderTree,
+  Briefcase,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 const navItems = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -16,29 +22,52 @@ const navItems = [
   { to: "/admin/business", label: "Business Info", icon: Info },
 ];
 
-const AdminSidebar = () => {
+function SidebarContent({ onLinkClick }) {
   return (
-    <aside className="min-h-[calc(100vh-4rem)] w-64 border-r bg-card p-4">
-      <nav className="space-y-2">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )
-            }
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
+    <nav className="space-y-1">
+      {navItems.map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end={item.end}
+          onClick={onLinkClick}
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )
+          }
+        >
+          <item.icon className="w-4 h-4" />
+          {item.label}
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
+
+const AdminSidebar = ({ mobile, open, onOpenChange }) => {
+  // Mobile version - Sheet component
+  if (mobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="left" className="w-64 p-4">
+          <SheetHeader>
+            <SheetTitle className="text-left">Navigation</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6">
+            <SidebarContent onLinkClick={() => onOpenChange?.(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <aside className="w-64 bg-card border-r min-h-[calc(100vh-4rem)] p-4">
+      <SidebarContent />
     </aside>
   );
 };
