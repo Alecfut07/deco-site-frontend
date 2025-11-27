@@ -1,5 +1,19 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
+// Token storage helper
+const getToken = () => {
+  return localStorage.getItem("family_member_token");
+};
+
+// Helper to get auth headers
+const getAuthHeaders = (additionalHeaders = {}) => {
+  const token = getToken();
+  return {
+    ...additionalHeaders,
+    ...(token && { Authorization: `Token ${token}` }),
+  };
+};
+
 export class ApiError extends Error {
   constructor(status, message, data) {
     super(message);
@@ -9,15 +23,27 @@ export class ApiError extends Error {
 }
 
 const apiRequest = async (endpoint, options = {}) => {
+  // Merge auth headers with any provided headers
+  const headers = {
+    ...getAuthHeaders(options.headers || {}),
+    ...(options.headers || {}),
+  };
+
+  // Remove Content-Type from headers if body is FormData (browser will set it with boundary)
+  if (options.body instanceof FormData) {
+    delete headers["Content-Type"];
+  } else if (!headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
-    credentials: "include",
-    headers: {
-      ...options.headers,
-    },
+    headers,
   });
 
   if (response.status === 401 || response.status === 403) {
+    // Clear token on auth failure
+    localStorage.removeItem("family_member_token");
     window.location.href = "/login";
     throw new ApiError(response.status, "Unauthorized");
   }
@@ -36,100 +62,100 @@ const apiRequest = async (endpoint, options = {}) => {
 
 export const api = {
   getPortfolioItems: (params) =>
-    apiRequest(`/admin/portfolio-items/${params ? `?${params}` : ""}`),
+    apiRequest(`/api/admin/portfolio-items/${params ? `?${params}` : ""}`),
 
-  getPortfolioItem: (id) => apiRequest(`/admin/portfolio-items/${id}/`),
+  getPortfolioItem: (id) => apiRequest(`/api/admin/portfolio-items/${id}/`),
 
   createPortfolioItem: (formData) =>
-    apiRequest("/admin/portfolio-items/", {
+    apiRequest("/api/admin/portfolio-items/", {
       method: "POST",
       body: formData,
     }),
 
   updatePortfolioItem: (id, formData) =>
-    apiRequest(`/admin/portfolio-items/${id}/`, {
+    apiRequest(`/api/admin/portfolio-items/${id}/`, {
       method: "PATCH",
       body: formData,
     }),
 
   deletePortfolioItem: (id) =>
-    apiRequest(`/admin/portfolio-items/${id}/`, {
+    apiRequest(`/api/admin/portfolio-items/${id}/`, {
       method: "DELETE",
     }),
 
   createPortfolioImage: (formData) =>
-    apiRequest("/admin/portfolio-images/", {
+    apiRequest("/api/admin/portfolio-images/", {
       method: "POST",
       body: formData,
     }),
 
   updatePortfolioImage: (id, formData) =>
-    apiRequest(`/admin/portfolio-images/${id}/`, {
+    apiRequest(`/api/admin/portfolio-images/${id}/`, {
       method: "PATCH",
       body: formData,
     }),
 
   deletePortfolioImage: (id) =>
-    apiRequest(`/admin/portfolio-images/${id}/`, {
+    apiRequest(`/api/admin/portfolio-images/${id}/`, {
       method: "DELETE",
     }),
 
   createPortfolioVideo: (formData) =>
-    apiRequest("/admin/portfolio-videos/", {
+    apiRequest("/api/admin/portfolio-videos/", {
       method: "POST",
       body: formData,
     }),
 
   updatePortfolioVideo: (id, formData) =>
-    apiRequest(`/admin/portfolio-videos/${id}/`, {
+    apiRequest(`/api/admin/portfolio-videos/${id}/`, {
       method: "PATCH",
       body: formData,
     }),
 
   deletePortfolioVideo: (id) =>
-    apiRequest(`/admin/portfolio-videos/${id}/`, {
+    apiRequest(`/api/admin/portfolio-videos/${id}/`, {
       method: "DELETE",
     }),
 
-  getCategories: () => apiRequest("/categories/"),
+  getCategories: () => apiRequest("/api/categories/"),
 
   createCategory: (data) =>
-    apiRequest("/admin/categories/", {
+    apiRequest("/api/admin/categories/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }),
 
   deleteCategory: (id) =>
-    apiRequest(`/admin/categories/${id}/`, {
+    apiRequest(`/api/admin/categories/${id}/`, {
       method: "DELETE",
     }),
 
-  getServices: () => apiRequest("/services/"),
+  getServices: () => apiRequest("/api/services/"),
 
   createService: (data) =>
-    apiRequest("/admin/services/", {
+    apiRequest("/api/admin/services/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }),
 
   updateService: (id, data) =>
-    apiRequest(`/admin/services/${id}/`, {
+    apiRequest(`/api/admin/services/${id}/`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }),
 
   deleteService: (id) =>
-    apiRequest(`/admin/services/${id}/`, {
+    apiRequest(`/api/admin/services/${id}/`, {
       method: "DELETE",
     }),
 
-  getBusinessInfo: () => apiRequest("/business-info/"),
+  getBusinessInfo: () => apiRequest("/api/business-info/"),
 
   updateBusinessInfo: (data) =>
-    apiRequest("/admin/business-info/", {
+    apiRequest("/api/admin/business-info/", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
