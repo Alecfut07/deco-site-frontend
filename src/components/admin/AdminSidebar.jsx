@@ -65,6 +65,7 @@ const AdminSidebar = ({ mobile, open, onOpenChange }) => {
     );
   }
 
+  // Desktop version - Fixed sidebar
   return (
     <aside className="w-64 bg-card border-r min-h-[calc(100vh-4rem)] p-4">
       <SidebarContent />
