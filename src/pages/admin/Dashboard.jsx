@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Image, Video, FolderTree, Briefcase } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/lib/api";
-import { notify } from "@/utils/notify";
+import { Image, Video, FolderTree, Briefcase } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -22,29 +22,26 @@ const Dashboard = () => {
           api.getServices(),
         ]);
 
-        const list = items?.results || [];
-        const imageCount = list.reduce(
-          (sum, item) => sum + (item.pictures?.length || 0),
-          0
-        );
-        const videoCount = list.reduce(
-          (sum, item) => sum + (item.videos?.length || 0),
-          0
-        );
+        const imageCount =
+          items.results?.reduce(
+            (sum, item) => sum + (item.pictures?.length || 0),
+            0
+          ) || 0;
+        const videoCount =
+          items.results?.reduce(
+            (sum, item) => sum + (item.videos?.length || 0),
+            0
+          ) || 0;
 
         setStats({
-          portfolioItems: items?.count || list.length,
+          portfolioItems: items?.count || 0,
           images: imageCount,
           videos: videoCount,
           categories: categories.length,
           services: services.length,
         });
       } catch (error) {
-        notify({
-          title: "Error",
-          description: "Failed to load dashboard stats.",
-          variant: "destructive",
-        });
+        console.error("Failed to load stats", error);
       }
     };
 
@@ -87,19 +84,21 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">Overview of your portfolio.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {statCards.map((stat) => (
-          <Card key={stat.title}>
+          <Card key={stat.title} className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle>{stat.title}</CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              <CardTitle className="text-sm font-medium">
+                {stat.title}
+              </CardTitle>
+              <stat.icon className={cn("w-4 h-4", stat.color)} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="text-2xl sm:text-3xl font-bold">{stat.value}</div>
             </CardContent>
           </Card>
         ))}
