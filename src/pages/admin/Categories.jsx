@@ -51,7 +51,7 @@ const Categories = () => {
     event.preventDefault();
 
     try {
-      if (editingCategory) {
+      if (editingCategory?.id) {
         await api.updateCategory(editingCategory.id, formData);
         notify({ title: "Success", description: "Category updated." });
       } else {
