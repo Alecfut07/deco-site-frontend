@@ -1,39 +1,42 @@
-import { Link } from "react-router-dom";
-import { LogOut, User } from "lucide-react";
 import { useAuth } from "@/context/useAuth";
 import { Button } from "@/components/ui/button";
-import { notify } from "@/utils/notify";
+import { LogOut, User, Menu } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const AdminTopbar = () => {
+const AdminTopbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      notify({ title: "Signed out", description: "You have been logged out." });
-    } catch (error) {
-      notify({
-        title: "Logout failed",
-        description: error?.message || "Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-6">
-      <Link to="/" className="flex items-center gap-2">
-        <span className="text-xl font-bold text-primary">Deco Portfolio</span>
-        <span className="text-sm text-muted-foreground">Admin</span>
-      </Link>
+    <header className="h-16 border-b bg-card flex items-center justify-between px-4 sm:px-6">
+      <div className="flex items-center gap-3">
+        {/* Hamburger Menu - Mobile Only */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden"
+          onClick={onMenuClick}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
 
-      <div className="flex items-center gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <User className="h-4 w-4 text-muted-foreground" />
+        <Link to="/" className="flex items-center gap-2">
+          <span className="text-lg sm:text-xl font-bold text-primary">
+            Deco Portfolio
+          </span>
+          <span className="hidden sm:inline text-sm text-muted-foreground">
+            Admin
+          </span>
+        </Link>
+      </div>
+
+      <div className="flex items-center gap-2 sm:gap-4">
+        <div className="hidden sm:flex items-center gap-2 text-sm">
+          <User className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">{user?.username || "Admin"}</span>
         </div>
-        <Button variant="outline" size="sm" onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
+        <Button variant="outline" size="sm" onClick={logout}>
+          <LogOut className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">Logout</span>
         </Button>
       </div>
     </header>
