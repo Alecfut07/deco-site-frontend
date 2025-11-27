@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
-import { notify } from "@/utils/notify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { notify } from "@/utils/notify";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,9 +19,9 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 const Categories = () => {
@@ -37,7 +37,7 @@ const Categories = () => {
     } catch (error) {
       notify({
         title: "Error",
-        description: "Failedl to load categories.",
+        description: "Failed to load categories.",
         variant: "destructive",
       });
     }
@@ -51,7 +51,7 @@ const Categories = () => {
     event.preventDefault();
 
     try {
-      if (editingCategory?.id) {
+      if (editingCategory) {
         await api.updateCategory(editingCategory.id, formData);
         notify({ title: "Success", description: "Category updated." });
       } else {
@@ -89,57 +89,62 @@ const Categories = () => {
     }
   };
 
-  const openCreate = () => {
-    setEditingCategory({});
-    setFormData({ name: "", description: "" });
-  };
-
   const openEdit = (category) => {
     setEditingCategory(category);
     setFormData({
-      name: category.name || "",
-      description: category.description || "",
+      name: category.name,
+      description: category.description,
     });
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Categories</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Categories</h1>
           <p className="text-muted-foreground">
             Organize your portfolio by category.
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button
+          onClick={() => {
+            setEditingCategory({});
+            setFormData({ name: "", description: "" });
+          }}
+          className="w-full sm:w-auto"
+        >
+          <Plus className="w-4 h-4 mr-2" />
           New Category
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {categories.map((cat) => (
           <Card key={cat.id}>
             <CardHeader>
               <CardTitle>{cat.name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-sm text-muted-foreground">{cat.description}</p>
-              <div className="flex gap-2">
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {cat.description}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => openEdit(cat)}
+                  className="flex-1"
                 >
-                  <Pencil className="mr-1 h-3 w-3" />
+                  <Pencil className="w-3 h-3 mr-1" />
                   Edit
                 </Button>
                 <Button
                   vairant="outline"
                   size="sm"
                   onClick={() => setDeleteId(cat.id)}
+                  className="flex-1"
                 >
-                  <Trash2 className="mr-1 h-3 w-3" />
+                  <Trash2 className="w-3 h-3 mr-1" />
                   Delete
                 </Button>
               </div>
@@ -155,14 +160,14 @@ const Categories = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingCategory ? "Edit" : "New"} Category
+              {editingCategory?.id ? "Edit" : "New"} Category
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="category-name">Name *</Label>
+              <Label htmlFor="name">Name *</Label>
               <Input
-                id="category-name"
+                id="name"
                 value={formData.name}
                 onChange={(event) =>
                   setFormData({ ...formData, name: event.target.value })
@@ -171,9 +176,9 @@ const Categories = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category-description">Description</Label>
+              <Label htmlFor="description">Description</Label>
               <Input
-                id="category-description"
+                id="description"
                 value={formData.description}
                 onChange={(event) =>
                   setFormData({ ...formData, description: event.target.value })
@@ -195,7 +200,7 @@ const Categories = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm deletion</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the category.
+              This will permanently delete this category.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
