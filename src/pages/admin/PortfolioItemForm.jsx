@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 import { api } from "@/lib/api";
-import { notify } from "@/utils/notify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,25 +14,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-
-const emptyForm = {
-  title: "",
-  description: "",
-  category_id: "",
-  service_id: "",
-  is_before_after: false,
-  image: null,
-  before_image: null,
-  after_image: null,
-};
+import { notify } from "@/utils/notify";
+import { ArrowLeft } from "lucide-react";
 
 const PortfolioItemForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
-  const [formData, setFormData] = useState(emptyForm);
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category_id: "",
+    service_id: "",
+    is_before_after: false,
+    image: null,
+    before_image: null,
+    after_image: null,
+  });
 
   useEffect(() => {
     const load = async () => {
@@ -48,19 +47,17 @@ const PortfolioItemForm = () => {
 
         if (id) {
           const item = await api.getPortfolioItem(Number(id));
-          setFormData((prev) => ({
-            ...prev,
-            title: item.title || "",
-            description: item.description || "",
+          setFormData({
+            title: item.title,
+            description: item.description,
             category_id: item.category?.id ? String(item.category.id) : "",
             service_id: item.service?.id ? String(item.service.id) : "",
-            is_before_after: Boolean(
-              item.is_before_after || item.has_before_after
-            ),
+            is_before_after:
+              item.is_before_after || item.has_before_after || false,
             image: null,
             before_image: null,
             after_image: null,
-          }));
+          });
         }
       } catch (error) {
         notify({
@@ -76,7 +73,7 @@ const PortfolioItemForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setSaving(true);
+    setLoading(true);
 
     try {
       const data = new FormData();
@@ -84,7 +81,7 @@ const PortfolioItemForm = () => {
       data.append("description", formData.description);
       data.append("category_id", formData.category_id);
       data.append("service_id", formData.service_id);
-      data.append("is_before_after", String(formData.is_before_after));
+      data.append("is_before_after", formData.is_before_after.toString());
 
       if (formData.image) data.append("image", formData.image);
       if (formData.before_image)
@@ -108,22 +105,22 @@ const PortfolioItemForm = () => {
         variant: "destructive",
       });
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate("/admin/portfolio")}
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl sm:text-3xl font-bold">
             {id ? "Edit" : "New"} Portfolio Item
           </h1>
         </div>
@@ -134,8 +131,8 @@ const PortfolioItemForm = () => {
           <CardTitle>Item Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <div className="space-y-2">
               <Label htmlFor="title">Title *</Label>
               <Input
                 id="title"
@@ -160,9 +157,9 @@ const PortfolioItemForm = () => {
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Category *</Label>
+                <Label htmlFor="category">Category *</Label>
                 <Select
                   value={formData.category_id}
                   onValueChange={(value) =>
@@ -171,7 +168,7 @@ const PortfolioItemForm = () => {
                   required
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="select category" />
+                    <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
@@ -184,7 +181,7 @@ const PortfolioItemForm = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Service *</Label>
+                <Label htmlFor="service">Service *</Label>
                 <Select
                   value={formData.service_id}
                   onValueChange={(value) =>
@@ -213,11 +210,11 @@ const PortfolioItemForm = () => {
                 onCheckedChange={(checked) =>
                   setFormData({
                     ...formData,
-                    is_before_after: Boolean(checked),
+                    is_before_after: checked,
                   })
                 }
               />
-              <Label htmlFor="before-after">Before/After project</Label>
+              <Label htmlFor="before-after">Before/After Project</Label>
             </div>
 
             <div className="space-y-2">
@@ -236,7 +233,7 @@ const PortfolioItemForm = () => {
             </div>
 
             {formData.is_before_after && (
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="before">Before Image</Label>
                   <Input
@@ -268,14 +265,15 @@ const PortfolioItemForm = () => {
               </div>
             )}
 
-            <div className="flex gap-2 pt-4">
-              <Button type="submit" disabled={saving}>
-                {saving ? "Saving..." : "Save"}
+            <div className="flex flex-col sm:flex-row gap-2 pt-4">
+              <Button type="submit" disabled={loading} className="flex-1">
+                {loading ? "Saving..." : "Save"}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate("/admin/portfolio")}
+                className="flex-1"
               >
                 Cancel
               </Button>
