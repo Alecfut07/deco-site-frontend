@@ -5,12 +5,28 @@ import { AuthContext } from "./createAuthContext";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
-// Helper function to delete a cookie
-const deleteCookie = (name, path = "/", domain = window.location.hostname) => {
-  // Try deleting with the current domain
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain};`;
-  // Also try without domain (for localhost)
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
+// Token storage helpers
+const TOKEN_KEY = "family_member_token";
+
+const getToken = () => {
+  return localStorage.getItem(TOKEN_KEY);
+};
+
+const setToken = (token) => {
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+};
+
+// Helper function to get auth headers
+const getAuthHeaders = () => {
+  const token = getToken();
+  return {
+    "Content-Type": "application/json",
+    ...(token && { Authorization: `Token ${token}` }),
+  };
 };
 
 export const AuthProvider = ({ children }) => {
@@ -19,9 +35,17 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const checkAuth = async () => {
+    const token = getToken();
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/user/`, {
-        credentials: "include",
+        method: "GET",
+        headers: getAuthHeaders(),
       });
 
       if (response.ok) {
@@ -30,23 +54,22 @@ export const AuthProvider = ({ children }) => {
           const data = await response.json();
           setUser(data);
         } else {
-          // Response is not JSON (likely HTML error page)
           console.warn("Auth check returned non-JSON response");
           setUser(null);
+          setToken(null);
         }
       } else if (response.status === 403 || response.status === 401) {
-        // User is not authenticated - this is expected, not an error
+        // Token is invalid or expired
         setUser(null);
+        setToken(null);
       } else {
-        // Other error status
         setUser(null);
+        setToken(null);
       }
     } catch (error) {
-      // Only log actual network errors, not expected 403s
-      if (error.name !== "TypeError") {
-        console.error("Failed to verify session", error);
-      }
+      console.error("Failed to verify session", error);
       setUser(null);
+      setToken(null);
     } finally {
       setLoading(false);
     }
@@ -71,33 +94,37 @@ export const AuthProvider = ({ children }) => {
       throw new Error(error.detail || "Login failed");
     }
 
-    // After successful login, fetch the user data
-    await checkAuth();
+    const data = await response.json();
+
+    // Store the token
+    if (data.token) {
+      setToken(data.token);
+    }
+
+    // Set user data
+    if (data.user) {
+      setUser(data.user);
+    } else {
+      // If user data not in response, fetch it
+      await checkAuth();
+    }
   };
 
   const logout = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/logout/`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      // Logout should succeed locally even if backend returns 403/401
-      // (session might already be expired)
-      if (!response.ok && response.status !== 403 && response.status !== 401) {
-        // Only log if it's not an auth error (might be a real server error)
-        console.warn("Logout request failed with status: ", response.status);
+      const token = getToken();
+      if (token) {
+        await fetch(`${API_BASE_URL}/api/auth/logout/`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+        });
       }
     } catch (error) {
-      // Only log network errors, not expected auth failures
       console.warn("Logout network error (ignored): ", error);
     } finally {
-      // Delete authentication cookies
-      deleteCookie("sessionid");
-      deleteCookie("csrftoken");
-
-      // Always clear local state and redirect, regardless of backend response
+      // Clear token and user data
       setUser(null);
+      setToken(null);
       navigate("/login", { replace: true });
     }
   };
@@ -107,7 +134,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, login, logout, checkAuth }),
+    () => ({ user, loading, login, logout, checkAuth, getAuthHeaders }),
     [user, loading]
   );
 
