@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { notify } from "@/utils/notify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { notify } from "@/utils/notify";
 
 const BusinessInfo = () => {
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     tagline: "",
@@ -48,7 +48,7 @@ const BusinessInfo = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setSaving(true);
+    setLoading(true);
 
     try {
       await api.updateBusinessInfo(formData);
@@ -60,27 +60,27 @@ const BusinessInfo = () => {
         variant: "destructive",
       });
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold">Business Information</h1>
-        <p className="text-muted-foreground">Update your company details.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold">Business Information</h1>
+        <p className="text-muted-foreground">Update your business details.</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Company Details</CardTitle>
+          <CardTitle>Business Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="business-name">Business Name *</Label>
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">Business Name *</Label>
               <Input
-                id="business-name"
+                id="name"
                 value={formData.name}
                 onChange={(event) =>
                   setFormData({ ...formData, name: event.target.value })
@@ -90,9 +90,9 @@ const BusinessInfo = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="business-tagline">Tagline</Label>
+              <Label htmlFor="tagline">Tagline</Label>
               <Input
-                id="business-tagline"
+                id="tagline"
                 value={formData.tagline}
                 onChange={(event) =>
                   setFormData({ ...formData, tagline: event.target.value })
@@ -100,11 +100,12 @@ const BusinessInfo = () => {
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="business-phone">Phone *</Label>
+                <Label htmlFor="phone">Phone *</Label>
                 <Input
-                  id="business-phone"
+                  id="phone"
+                  type="tel"
                   value={formData.phone}
                   onChange={(event) =>
                     setFormData({ ...formData, phone: event.target.value })
@@ -113,9 +114,10 @@ const BusinessInfo = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="business-email">Email *</Label>
+                <Label htmlFor="email">Email *</Label>
                 <Input
-                  id="business-email"
+                  id="email"
+                  type="email"
                   value={formData.email}
                   onChange={(event) =>
                     setFormData({ ...formData, email: event.target.value })
@@ -126,9 +128,9 @@ const BusinessInfo = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="business-address">Address</Label>
+              <Label htmlFor="address">Address</Label>
               <Input
-                id="business-address"
+                id="address"
                 value={formData.address}
                 onChange={(event) =>
                   setFormData({ ...formData, address: event.target.value })
@@ -137,9 +139,9 @@ const BusinessInfo = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="business-description">Description</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
-                id="business-description"
+                id="description"
                 rows={4}
                 value={formData.description}
                 onChange={(event) =>
@@ -149,24 +151,23 @@ const BusinessInfo = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="business-specialties">
-                Specialties (comma-separated)
-              </Label>
+              <Label htmlFor="specialties">Specialties (comma-separated)</Label>
               <Input
-                id="business-specialties"
+                id="specialties"
                 value={formData.specialties}
                 onChange={(event) =>
                   setFormData({ ...formData, specialties: event.target.value })
                 }
+                placeholder="e.g. Kitchen remodeling, Bathroom renovation, etc."
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="business-years">Years of Experience</Label>
+              <Label htmlFor="years">Years of Experience</Label>
               <Input
-                id="business-years"
+                id="years"
                 type="number"
-                min={0}
+                min="0"
                 value={formData.years_experience}
                 onChange={(event) =>
                   setFormData({
@@ -178,8 +179,12 @@ const BusinessInfo = () => {
               />
             </div>
 
-            <Button type="submit" disabled={saving}>
-              {saving ? "Saving..." : "Save Changes"}
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              {loading ? "Saving..." : "Save Changes"}
             </Button>
           </form>
         </CardContent>
