@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
-import { notify } from "@/utils/notify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { notify } from "@/utils/notify";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +27,6 @@ const PortfolioItemMedia = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const loadItem = async () => {
-    if (!id) return;
     const data = await api.getPortfolioItem(id);
     setItem(data);
   };
@@ -36,47 +35,60 @@ const PortfolioItemMedia = () => {
     loadItem();
   }, [id]);
 
-  const handleFilesUpload = async (files, type) => {
-    if (!files || files.length === 0 || !id) return;
+  const handleImageUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setUploading(true);
     try {
-      const endpoint =
-        type === "image" ? api.createPortfolioImage : api.createPortfolioVideo;
-
       for (const file of Array.from(files)) {
         const formData = new FormData();
         formData.append("portfolio_item_id", String(id));
-        formData.append(type, file);
-        await endpoint(formData);
+        formData.append("image", file);
+        await api.createPortfolioImage(formData);
       }
 
       notify({
         title: "Success",
-        description: `${type === "image" ? "Images" : "Videos"} uploaded.`,
+        description: "Images uploaded",
       });
       loadItem();
     } catch (error) {
       notify({
-        title: "Upload failed",
-        description:
-          error?.data?.detail ||
-          `Unable to upload ${type === "image" ? "images" : "videos"}`,
+        title: "Error",
+        description: error?.data?.detail || "Failed to upload images",
         variant: "destructive",
       });
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
   };
 
-  const onImageUpload = (event) => {
-    handleFilesUpload(event.target.files, "image");
-    event.target.value = "";
-  };
+  const handleVideoUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-  const onVideoUpload = (event) => {
-    handleFilesUpload(event.target.files, "video");
-    event.target.value = "";
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append("portfolio_item_id", id);
+        formData.append("video", file);
+        await api.createPortfolioVideo(formData);
+      }
+      notify({ title: "Success", description: "Videos uploaded" });
+      loadItem();
+    } catch (error) {
+      notify({
+        title: "Error",
+        description: error?.data?.detail || "Failed to upload videos",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   const handleDelete = async () => {
@@ -88,12 +100,12 @@ const PortfolioItemMedia = () => {
       } else {
         await api.deletePortfolioVideo(deleteTarget.id);
       }
-      notify({ title: "Deleted", description: "Media removed successfully." });
+      notify({ title: "Success", description: "Deleted successfully." });
       loadItem();
     } catch (error) {
       notify({
         title: "Error",
-        description: error?.data?.detail || "Failed to delete media.",
+        description: error?.data?.detail || "Failed to delete",
         variant: "destructive",
       });
     } finally {
@@ -102,9 +114,7 @@ const PortfolioItemMedia = () => {
   };
 
   if (!item) {
-    return (
-      <div className="animate-pulse text-muted-foreground">Loading...</div>
-    );
+    return <div className="animate-pulse">Loading...</div>;
   }
 
   return (
@@ -115,11 +125,13 @@ const PortfolioItemMedia = () => {
           size="icon"
           onClick={() => navigate("/admin/portfolio")}
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Manage Media</h1>
-          <p claasName="text-muted-foreground">{item.title}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">Manage Media</h1>
+          <p claasName="text-sm sm:text-base text-muted-foreground">
+            {item.title}
+          </p>
         </div>
       </div>
 
@@ -146,21 +158,20 @@ const PortfolioItemMedia = () => {
                   type="file"
                   accept="image/*"
                   multiple
-                  onChange={onImageUpload}
+                  onChange={handleImageUpload}
                   disabled={uploading}
                 />
               </div>
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {item.pictures?.map((pic) => (
               <Card key={pic.id} className="overflow-hidden">
                 <img
                   src={pic.thumbnail_url}
                   alt={pic.caption || ""}
-                  className="h-48 w-full object-cover"
-                  loading="lazy"
+                  className="w-full h-32 sm:h-48 object-cover"
                 />
                 <div className="p-2">
                   <Button
@@ -171,7 +182,7 @@ const PortfolioItemMedia = () => {
                       setDeleteTarget({ type: "image", id: pic.id })
                     }
                   >
-                    <Trash2 className="mr-1 h-3 w-3" />
+                    <Trash2 className="w-3 h-3 mr-1" />
                     Delete
                   </Button>
                 </div>
@@ -193,21 +204,20 @@ const PortfolioItemMedia = () => {
                   type="file"
                   accept="video/*"
                   multiple
-                  onChange={onVideoUpload}
+                  onChange={handleVideoUpload}
                   disabled={uploading}
                 />
               </div>
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {item.videos?.map((vid) => (
               <Card key={vid.id} className="overflow-hidden">
                 <img
                   src={vid.thumbnail_url}
                   alt={vid.caption || ""}
-                  className="h-48 w-full object-cover"
-                  loading="lazy"
+                  className="w-full h-32 sm:h-48 object-cover"
                 />
                 <div className="p-2">
                   <Button
@@ -218,7 +228,7 @@ const PortfolioItemMedia = () => {
                       setDeleteTarget({ type: "video", id: vid.id })
                     }
                   >
-                    <Trash2 className="mr-1 h-3 w-3" />
+                    <Trash2 className="w-3 h-3 mr-1" />
                     Delete
                   </Button>
                 </div>
@@ -236,7 +246,7 @@ const PortfolioItemMedia = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm deletion</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the selected {deleteTarget?.type}.
+              This will permanently delete this {deleteTarget?.type}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
