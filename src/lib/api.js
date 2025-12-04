@@ -119,6 +119,9 @@ export const api = {
 
   getCategories: () => apiRequest("/api/categories/"),
 
+  getAdminCategories: (params) =>
+    apiRequest(`/api/admin/categories/${params ? `?${params}` : ""}`),
+
   createCategory: (data) =>
     apiRequest("/api/admin/categories/", {
       method: "POST",
@@ -139,6 +142,9 @@ export const api = {
     }),
 
   getServices: () => apiRequest("/api/services/"),
+
+  getAdminServices: (params) =>
+    apiRequest(`/api/admin/services/${params ? `?${params}` : ""}`),
 
   createService: (data) =>
     apiRequest("/api/admin/services/", {
