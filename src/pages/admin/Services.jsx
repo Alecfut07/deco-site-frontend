@@ -70,7 +70,9 @@ const Services = () => {
     const loadCategories = async () => {
       try {
         const data = await api.getCategories();
-        setCategories(data);
+        // Handle both array and paginated response formats
+        const categoriesList = Array.isArray(data) ? data : data?.results || [];
+        setCategories(categoriesList);
       } catch (error) {
         console.error("Failed to load categories: ", error);
       }
