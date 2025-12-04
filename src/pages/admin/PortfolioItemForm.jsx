@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { notify } from "@/utils/notify";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 const PortfolioItemForm = () => {
   const { id } = useParams();
@@ -42,16 +42,31 @@ const PortfolioItemForm = () => {
           api.getCategories(),
           api.getServices(),
         ]);
-        setCategories(cats);
-        setServices(servs);
+
+        // Handle both array and paginated response formats
+        const categoriesList = Array.isArray(cats) ? cats : cats?.results || [];
+        const servicesList = Array.isArray(servs)
+          ? servs
+          : servs?.results || [];
+
+        setCategories(categoriesList);
+        setServices(servicesList);
 
         if (id) {
           const item = await api.getPortfolioItem(Number(id));
           setFormData({
-            title: item.title,
-            description: item.description,
-            category_id: item.category?.id ? String(item.category.id) : "",
-            service_id: item.service?.id ? String(item.service.id) : "",
+            title: item.title || "",
+            description: item.description || "",
+            category_id: item.category?.id
+              ? String(item.category.id)
+              : item.category_id
+              ? String(item.category_id)
+              : "",
+            service_id: item.service?.id
+              ? String(item.service.id)
+              : item.service_id
+              ? String(item.service_id)
+              : "",
             is_before_after:
               item.is_before_after || item.has_before_after || false,
             image: null,
@@ -267,6 +282,7 @@ const PortfolioItemForm = () => {
 
             <div className="flex flex-col sm:flex-row gap-2 pt-4">
               <Button type="submit" disabled={loading} className="flex-1">
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {loading ? "Saving..." : "Save"}
               </Button>
               <Button
