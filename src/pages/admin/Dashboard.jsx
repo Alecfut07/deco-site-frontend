@@ -33,12 +33,22 @@ const Dashboard = () => {
             0
           ) || 0;
 
+        // Handle both array and paginated response formats for categories
+        const categoriesCount = Array.isArray(categories)
+          ? categories.length
+          : categories?.count || 0;
+
+        // Handle both array and paginated response formats for services
+        const servicesCount = Array.isArray(services)
+          ? services.length
+          : services?.count || 0;
+
         setStats({
           portfolioItems: items?.count || 0,
           images: imageCount,
           videos: videoCount,
-          categories: categories.length,
-          services: services.length,
+          categories: categoriesCount,
+          services: servicesCount,
         });
       } catch (error) {
         console.error("Failed to load stats", error);
