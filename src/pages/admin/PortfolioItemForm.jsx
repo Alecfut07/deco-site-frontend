@@ -563,48 +563,42 @@ const PortfolioItemForm = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image">Main Image</Label>
-              <Input
+              <ImageUploadField
                 id="image"
-                type="file"
-                accept="image/*"
-                onChange={(event) =>
-                  setFormData({
-                    ...formData,
-                    image: event.target.files?.[0] || null,
-                  })
+                label="Main Image"
+                file={formData.image}
+                existingUrl={existingImages.image_url}
+                onFileChange={(file) =>
+                  setFormData({ ...formData, image: file })
                 }
+                error={errors.image}
               />
             </div>
 
             {formData.is_before_after && (
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="before">Before Image</Label>
-                  <Input
+                  <ImageUploadField
                     id="before"
-                    type="file"
-                    accept="image/*"
-                    onChange={(event) =>
-                      setFormData({
-                        ...formData,
-                        before_image: event.target.files?.[0] || null,
-                      })
+                    label="Before Image"
+                    file={formData.before_image}
+                    existingUrl={existingImages.before_image_url}
+                    onFileChange={(file) =>
+                      setFormData({ ...formData, before_image: file })
                     }
+                    error={errors.before_image}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="after">After Image</Label>
-                  <Input
+                  <ImageUploadField
                     id="after"
-                    type="file"
-                    accept="image/*"
-                    onChange={(event) =>
-                      setFormData({
-                        ...formData,
-                        after_image: event.target.files?.[0] || null,
-                      })
+                    label="After Image"
+                    file={formData.after_image}
+                    existingUrl={existingImages.after_image_url}
+                    onFileChange={(file) =>
+                      setFormData({ ...formData, after_image: file })
                     }
+                    error={errors.after_image}
                   />
                 </div>
               </div>
