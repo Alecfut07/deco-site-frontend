@@ -339,6 +339,40 @@ const PortfolioItemForm = () => {
     load();
   }, [id]);
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = "Title is required";
+    }
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    }
+    if (!formData.category_id) {
+      newErrors.category_id = "Category is required";
+    }
+    if (!formData.service_id) {
+      newErrors.service_id = "Service is required";
+    }
+
+    // Validate files if selected
+    if (formData.image) {
+      const validation = validateImageFile(formData.image);
+      if (!validation.valid) newErrors.iamge = validation.error;
+    }
+    if (formData.before_image) {
+      const validation = validateImageFile(formData.before_image);
+      if (!validation.valid) newErrors.before_image = validation.error;
+    }
+    if (formData.after_image) {
+      const validation = validateImageFile(formData.after_image);
+      if (!validation.valid) newErrors.after_image = validation.error;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
