@@ -449,11 +449,18 @@ const PortfolioItemForm = () => {
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(event) =>
-                  setFormData({ ...formData, title: event.target.value })
-                }
+                onChange={(event) => {
+                  setFormData({ ...formData, title: event.target.value });
+                  if (errors.title) setErrors({ ...errors, title: "" });
+                }}
+                className={errors.title ? "border-destructive" : ""}
                 required
               />
+              {errors.title && (
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> {errors.title}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -462,11 +469,19 @@ const PortfolioItemForm = () => {
                 id="description"
                 row={4}
                 value={formData.description}
-                onChange={(event) =>
-                  setFormData({ ...formData, description: event.target.value })
-                }
+                onChange={(event) => {
+                  setFormData({ ...formData, description: event.target.value });
+                  if (errors.description)
+                    setErrors({ ...errors, description: "" });
+                }}
+                className={errors.description ? "border-destructive" : ""}
                 required
               />
+              {errors.description && (
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> {errors.description}
+                </p>
+              )}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -474,12 +489,16 @@ const PortfolioItemForm = () => {
                 <Label htmlFor="category">Category *</Label>
                 <Select
                   value={formData.category_id}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, category_id: value })
-                  }
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, category_id: value });
+                    if (errors.category_id)
+                      setErrors({ ...errors, category_id: "" });
+                  }}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger
+                    className={errors.category_id ? "border-destructive" : ""}
+                  >
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -490,18 +509,27 @@ const PortfolioItemForm = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.category_id && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> {errors.category_id}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="service">Service *</Label>
                 <Select
                   value={formData.service_id}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, service_id: value })
-                  }
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, service_id: value });
+                    if (errors.service_id)
+                      setErrors({ ...errors, service_id: "" });
+                  }}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger
+                    className={errors.service_id ? "border-destructive" : ""}
+                  >
                     <SelectValue placeholder="Select service" />
                   </SelectTrigger>
                   <SelectContent>
@@ -512,6 +540,11 @@ const PortfolioItemForm = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.service_id && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> {errors.service_id}
+                  </p>
+                )}
               </div>
             </div>
 
