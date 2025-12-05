@@ -269,6 +269,8 @@ const PortfolioItemForm = () => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
+  const [existingImages, setExistingImages] = useState({});
+  const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
     title: "",
@@ -318,6 +320,11 @@ const PortfolioItemForm = () => {
             image: null,
             before_image: null,
             after_image: null,
+          });
+          setExistingImages({
+            image_url: item.image_url || item.thumbnail_url,
+            before_image_url: item.before_image_url,
+            after_image_url: item.after_image_url,
           });
         }
       } catch (error) {
