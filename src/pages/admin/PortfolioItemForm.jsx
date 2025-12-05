@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,245 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { notify } from "@/utils/notify";
 import { ArrowLeft, Loader2 } from "lucide-react";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
+
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return "0 bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+};
+
+const validateImageFile = (file) => {
+  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    return {
+      valid: false,
+      error: "Invalid file type. Please select a JPG, PNG, GIF, or WebP.",
+    };
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return {
+      valid: false,
+      error: `File size exceeds ${formatFileSize(
+        MAX_FILE_SIZE
+      )}. Please select a smaller file.`,
+    };
+  }
+  return {
+    valid: true,
+  };
+};
+
+const ImageUploadField = ({
+  id,
+  label,
+  file,
+  existingUrl,
+  onFileChange,
+  error,
+}) => {
+  const inputRef = useRef(null);
+  const [preview, setPreview] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [fileInfo, setFileInfo] = useState(null);
+
+  // Generate preview when file changes
+  useEffect(() => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreview(url);
+      setFileInfo({
+        size: formatFileSize(file.size),
+      });
+
+      // Get image dimensions
+      const img = new window.Image();
+      img.onload = () => {
+        setFileInfo((prev) =>
+          prev ? { ...prev, dimensions: `${img.width} x ${img.height}` } : null
+        );
+      };
+      img.src = url;
+
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreview(null);
+      setFileInfo(null);
+    }
+  }, [file]);
+
+  const handleFileSelect = useCallback(
+    (selectedFile) => {
+      const validation = validateImageFile(selectedFile);
+      if (!validation.valid) {
+        notify({
+          title: "Invalid File",
+          description: validation.error,
+          variant: "destructive",
+        });
+        return;
+      }
+      onFileChange(selectedFile);
+    },
+    [onFileChange]
+  );
+
+  const handleInputChange = (e) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      handleFileSelect(selectedFile);
+    }
+  };
+
+  const handleRemove = () => {
+    onFileChange(null);
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      handleFileSelect(droppedFile);
+    }
+  };
+
+  const handleClick = () => {
+    inputRef.current?.click();
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+
+      {/* Existing image preview (when editing) */}
+      {existingUrl && !preview && (
+        <div className="mb-3">
+          <p className="text-xs text-muted-foreground">Current image:</p>
+          <div className="relative inline-block">
+            <img
+              src={existingUrl}
+              alt={`Current ${label}`}
+              className="max-w-[200px] sm:max-w-[300px] h-auto rounded-lg border border-border object-cover"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* New file preview */}
+      {preview && (
+        <div className="mb-3">
+          <p className="text-xs text-muted-foreground mb-2">
+            New image preview:
+          </p>
+          <div className="relative inline-block">
+            <img
+              src={preview}
+              alt="Preview"
+              className="max-w-[200px] sm:max-w-[300px] h-auto rounded-lg border border-border object-cover"
+            />
+            <button
+              type="button"
+              onClick={handleRemove}
+              className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full shadow-md hover:bg-destructive/90 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          {fileInfo && (
+            <p>
+              {fileInfo.size}
+              {fileInfo.dimensions && ` • ${fileInfo.dimensions}`}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Drop zone / File input */}
+      <div
+        onClick={handleClick}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`
+          relative border-2 border-dashed rounded-lg p-6 cursor-pointer
+          transition-all duration-200 text-center
+          ${
+            isDragging
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-primary/50 hover:bg-primary/50"
+          }
+          ${error ? "border-destructive" : ""}
+          `}
+      >
+        <input
+          ref={inputRef}
+          id={id}
+          type="file"
+          accept="image/*"
+          onChange={handleInputChange}
+          className="hidden"
+        />
+
+        <div className="flex flex-col items-center gap-2">
+          {isDragging ? (
+            <>
+              <Upload className="w-8 h-8 text-primary" />
+              <p className="text-sm font-medium text-primary">
+                Drop image here
+              </p>
+            </>
+          ) : (
+            <>
+              <ImageIcon className="w-8 h-8 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-primary">
+                  Click to upload
+                </span>{" "}
+                or drag and drop
+              </p>
+              <p className="text-xs text-muted-foreground">
+                JPG, PNG, GIF, or WebP (max {formatFileSize(MAX_FILE_SIZE)})
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-1 text-destructive text-sm">
+          <AlertCircle className="w-4 h-4" />
+          <span>{error}</span>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const PortfolioItemForm = () => {
   const { id } = useParams();
