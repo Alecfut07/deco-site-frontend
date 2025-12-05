@@ -194,7 +194,7 @@ const ImageUploadField = ({
             </button>
           </div>
           {fileInfo && (
-            <p>
+            <p className="text-xs text-muted-foreground mt-2">
               {fileInfo.size}
               {fileInfo.dimensions && ` • ${fileInfo.dimensions}`}
             </p>
@@ -358,7 +358,7 @@ const PortfolioItemForm = () => {
     // Validate files if selected
     if (formData.image) {
       const validation = validateImageFile(formData.image);
-      if (!validation.valid) newErrors.iamge = validation.error;
+      if (!validation.valid) newErrors.image = validation.error;
     }
     if (formData.before_image) {
       const validation = validateImageFile(formData.before_image);
@@ -467,7 +467,7 @@ const PortfolioItemForm = () => {
               <Label htmlFor="description">Description *</Label>
               <Textarea
                 id="description"
-                row={4}
+                rows={4}
                 value={formData.description}
                 onChange={(event) => {
                   setFormData({ ...formData, description: event.target.value });
