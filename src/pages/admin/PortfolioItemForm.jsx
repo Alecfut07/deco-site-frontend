@@ -375,6 +375,16 @@ const PortfolioItemForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!validateForm()) {
+      notify({
+        title: "Validation Error",
+        description: "Please fix the errors in the form",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
