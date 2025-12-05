@@ -605,7 +605,11 @@ const PortfolioItemForm = () => {
             )}
 
             <div className="flex flex-col sm:flex-row gap-2 pt-4">
-              <Button type="submit" disabled={loading} className="flex-1">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex-1 flex items-center gap-2"
+              >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {loading ? "Saving..." : "Save"}
               </Button>
