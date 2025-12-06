@@ -720,6 +720,14 @@ const PortfolioItemForm = () => {
     }
   };
 
+  // Cleanup previews on unmount
+  useEffect(() => {
+    return () => {
+      newImages.forEach((img) => URL.revokeObjectURL(img.preview));
+      newVideos.forEach((vid) => URL.revokeObjectURL(vid.preview));
+    };
+  }, []);
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4">
