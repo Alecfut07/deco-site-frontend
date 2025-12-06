@@ -561,8 +561,15 @@ const PortfolioItemForm = () => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
-  const [existingImages, setExistingImages] = useState({});
   const [errors, setErrors] = useState({});
+
+  // Gallery images and videos
+  const [existingImages, setExistingImages] = useState({});
+  const [existingVideos, setExistingVideos] = useState({});
+  const [newImages, setNewImages] = useState([]);
+  const [newVideos, setNewVideos] = useState([]);
+  const [deletingImageIds, setDeletingImageIds] = useState([]);
+  const [deletingVideoIds, setDeletingVideoIds] = useState([]);
 
   const [formData, setFormData] = useState({
     title: "",
