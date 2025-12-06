@@ -838,12 +838,25 @@ const PortfolioItemForm = () => {
       if (formData.after_image)
         data.append("after_image", formData.after_image);
 
+      let portfolioItemId;
+
       if (id) {
         await api.updatePortfolioItem(Number(id), data);
+        portfolioItemId = Number(id);
         notify({ title: "Success", description: "Portfolio item updated." });
       } else {
-        await api.createPortfolioItem(data);
+        const result = await api.createPortfolioItem(data);
+        portfolioItemId = result.id;
         notify({ title: "Success", description: "Portfolio item created." });
+      }
+
+      // Upload new media files
+      if (newImages.length > 0 || newVideos.length > 0) {
+        await uploadNewMedia(portfolioItemId);
+        notify({
+          title: "Success",
+          description: "Portfolio item and media saved successfully",
+        });
       }
 
       navigate("/admin/portfolio");
