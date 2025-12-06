@@ -774,6 +774,42 @@ const PortfolioItemForm = () => {
     }
   }, []);
 
+  const uploadNewMedia = async (portfolioItemId) => {
+    // Upload new images
+    for (const img of newImages) {
+      const imageData = new FormData();
+      imageData.append("portfolio_item", portfolioItemId.toString());
+      imageData.append("image", img.file);
+      try {
+        await api.createPortfolioImage(imageData);
+      } catch (error) {
+        console.error("Failed to upload image: ", error);
+        notify({
+          title: "Error",
+          description: `Failed to upload ${img.file.name}`,
+          variant: "destructive",
+        });
+      }
+    }
+
+    // Upload new videos
+    for (const vid of newVideos) {
+      const videoData = new FormData();
+      videoData.append("portfolio_item", portfolioItemId.toString());
+      videoData.append("video", vid.file);
+      try {
+        await api.createPortfolioVideo(videoData);
+      } catch (error) {
+        console.error("Failed to upload video: ", error);
+        notify({
+          title: "Error",
+          description: `Failed to upload ${vid.file.name}`,
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
