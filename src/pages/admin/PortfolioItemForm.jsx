@@ -561,10 +561,11 @@ const PortfolioItemForm = () => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
+  const [existingImages, setExistingImages] = useState({});
   const [errors, setErrors] = useState({});
 
   // Gallery images and videos
-  const [existingImages, setExistingImages] = useState({});
+  const [existingPictures, setExistingPictures] = useState([]);
   const [existingVideos, setExistingVideos] = useState({});
   const [newImages, setNewImages] = useState([]);
   const [newVideos, setNewVideos] = useState([]);
@@ -625,6 +626,8 @@ const PortfolioItemForm = () => {
             before_image_url: item.before_image_url,
             after_image_url: item.after_image_url,
           });
+          setExistingPictures(item.pictures || []);
+          setExistingVideos(item.videos || []);
         }
       } catch (error) {
         notify({
