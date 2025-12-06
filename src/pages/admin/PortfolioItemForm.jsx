@@ -675,7 +675,7 @@ const PortfolioItemForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleAddPictures = useCallback((files) => {
+  const handleAddImages = useCallback((files) => {
     const validFiles = [];
     Array.from(files).forEach((file) => {
       const validation = validateImageFile(file);
@@ -1060,6 +1060,73 @@ const PortfolioItemForm = () => {
                   />
                 </div>
               </div>
+            )}
+
+            {/* Gallery Images Section - Edit Mode */}
+            {id && (
+              <div className="pt-4 border-t border-border">
+                <MultiMediaSection
+                  type="image"
+                  existingItems={existingPictures}
+                  newFiles={newImages}
+                  onAddFiles={handleAddImages}
+                  onRemoveNew={handleRemoveNewImage}
+                  onDeleteExisting={handleDeleteExistingImage}
+                  deletingIds={deletingImageIds}
+                />
+              </div>
+            )}
+
+            {/* Gallery Videos Section - Edit Mode */}
+            {id && (
+              <div className="pt-4 border-t border-border">
+                <MultiMediaSection
+                  type="video"
+                  existingItems={existingVideos}
+                  newFiles={newVideos}
+                  onAddFiles={handleAddVideos}
+                  onRemoveNew={handleRemoveNewVideo}
+                  onDeleteExisting={handleDeleteExistingVideo}
+                  deletingIds={deletingVideoIds}
+                />
+              </div>
+            )}
+
+            {/* Gallery Images Section - Create Mode */}
+            {!id && (
+              <>
+                <div className="pt-4 border-t border-border">
+                  <MultiMediaSection
+                    type="image"
+                    existingItems={[]}
+                    newFiles={newImages}
+                    onAddFiles={handleAddImages}
+                    onRemoveNew={handleRemoveNewImage}
+                    onDeleteExisting={() => {}}
+                    deletingIds={[]}
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Gallery images will be uploaded after the portfolio item is
+                    created.
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <MultiMediaSection
+                    type="video"
+                    existingItems={[]}
+                    newFiles={newVideos}
+                    onAddFiles={handleAddVideos}
+                    onRemoveNew={handleRemoveNewVideo}
+                    onDeleteExisting={() => {}}
+                    deletingIds={[]}
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Gallery videos will be uploaded after the portfolio item is
+                    created.
+                  </p>
+                </div>
+              </>
             )}
 
             <div className="flex flex-col sm:flex-row gap-2 pt-4">
