@@ -1135,8 +1135,14 @@ const PortfolioItemForm = () => {
                 disabled={loading}
                 className="flex-1 flex items-center gap-2"
               >
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {loading ? "Saving..." : "Save"}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save"
+                )}
               </Button>
               <Button
                 type="button"
