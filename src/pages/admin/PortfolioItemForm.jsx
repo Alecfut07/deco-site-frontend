@@ -303,6 +303,258 @@ const ImageUploadField = ({
   );
 };
 
+const MultiMediaSection = ({
+  type,
+  existingItems,
+  newFiles,
+  onAddFiles,
+  onRemoveNew,
+  onDeleteExisting,
+  deletingIds,
+}) => {
+  const inputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const isImage = type === "image";
+  const accept = isImage ? "image/*" : "video/*";
+  const maxSize = isImage ? MAX_FILE_SIZE : MAX_VIDEO_SIZE;
+  const Icon = isImage ? ImageIcon : Video;
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files.length > 0) {
+      onAddFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      onAddFiles(e.target.files);
+      e.target.value = "";
+    }
+  };
+
+  const totalCount = existingItems.length + newFiles.length;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label className="text-base font-medium">
+          {isImage ? "Gallery Images" : "Gallery Videos"}
+          <span className="ml-2 text-sm font-normal text-muted-foreground">
+            ({existingItems.length} existing
+            {newFiles.length > 0 ? ` + ${newFiles.length} new` : ""})
+          </span>
+        </Label>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => inputRef.current?.click()}
+        >
+          <Plus className="w-4 h-4 mr-1" />
+          Add {isImage ? "Images" : "Videos"}
+        </Button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          multiple
+          onChange={handleInputChange}
+          className="hidden"
+        />
+      </div>
+
+      {/* Drop zone when empty */}
+      {totalCount === 0 && (
+        <div
+          onClick={() => inputRef.current?.click()}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`
+            border-2 border-dashed rounded-lg p-8 cursor-pointer text-center
+            transition-all duration-200
+            ${
+              isDragging
+                ? "border-primary bg-primary/5"
+                : "border-border hover:border-primary/50 hover:bg-muted/50"
+            }
+          `}
+        >
+          <Icon className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-primary">Click to upload</span> or
+            drag and drop
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {isImage ? "JPG, PNG, GIF, or WebP" : "MP4, WebM, MOV, or AVI"} (max{" "}
+            {formatFileSize(maxSize)})
+          </p>
+        </div>
+      )}
+
+      {/* Media grid */}
+      {totalCount > 0 && (
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`
+            grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3
+            p-3 rounded-lg border-2 border-dashed transition-all duration-200
+            ${isDragging ? "border-primary bg-primary/5" : "border-transparent"}
+          `}
+        >
+          {/* Existing items */}
+          {existingItems.map((item) => {
+            const isDeleting = deletingIds.includes(item.id);
+            const thumbnailUrl =
+              item.thumbnail_url || (isImage ? item.image_url : undefined);
+
+            return (
+              <div
+                key={`existing-${item.id}`}
+                className="relative group aspect-square"
+              >
+                {isImage ? (
+                  <img
+                    src={thumbnailUrl}
+                    alt={item.caption || `${type} ${item.id}`}
+                    className="w-full h-full object-cover rounded-lg border border-border"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-lg border border-border bg-muted flex items-center justify-center relative overflow-hidden">
+                    {thumbnailUrl ? (
+                      <img
+                        src={thumbnailUrl}
+                        alt={item.caption || `Video ${item.id}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Video className="w-10 h-10 text-muted-foreground" />
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-background/80 flex items-center justify-center">
+                        <Video className="w-5 h-5 text-foreground" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirm(item.id)}
+                  disabled={isDeleting}
+                  className="absolute -top-2 -right-2 p-1.5 bg-destructive text-destructive-foreground rounded-full shadow-md hover:bg-destructive/90 transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3 h-3" />
+                  )}
+                </button>
+                <span className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] bg-background/80 rounded text-muted-foreground">
+                  Saved
+                </span>
+              </div>
+            );
+          })}
+
+          {/* New files */}
+          {newFiles.map((item) => (
+            <div key={item.id} className="relative group aspect-square">
+              {isImage ? (
+                <img
+                  src={item.preview}
+                  alt="New upload"
+                  className="w-full h-full object-cover rounded-lg border-2 border-primary/50"
+                />
+              ) : (
+                <div className="w-full h-full rounded-lg border-2 border-primary/50 bg-muted flex items-center justify-center relative overflow-hidden">
+                  <video
+                    src={item.preview}
+                    className="w-full h-full object-cover"
+                    muted
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-background/80 flex items-center justify-center">
+                      <Video className="w-5 h-5 text-foreground" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => onRemoveNew(item.id)}
+                className="absolute -top-2 -right-2 p-1.5 bg-destructive text-destructive-foreground rounded-full shadow-md hover:bg-destructive/90 transition-all opacity-0 group-hover:opacity-100"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              <span className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] bg-primary/80 text-primary-foreground rounded">
+                New
+              </span>
+            </div>
+          ))}
+
+          {/* Add more button in grid */}
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="aspect-square rounded-lg border-2 border-dashed border-border hober:border-primary/50 hover:bg-muted/50 flex flex-col items-center justify-center gap-1 transition-all"
+          >
+            <Plus className="w-6 h-6 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Add more</span>
+          </button>
+        </div>
+      )}
+
+      {/* Delte confirmation dialog */}
+      <AlertDialog>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {isImage ? "Image" : "Video"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this {type} from the portfolio item.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteConfirm !== null) {
+                  onDeleteExisting(deleteConfirm);
+                  setDeleteConfirm(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
 const PortfolioItemForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
