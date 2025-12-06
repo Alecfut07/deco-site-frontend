@@ -675,6 +675,105 @@ const PortfolioItemForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleAddPictures = useCallback((files) => {
+    const validFiles = [];
+    Array.from(files).forEach((file) => {
+      const validation = validateImageFile(file);
+      if (validation.valid) {
+        validFiles.push({
+          file,
+          preview: URL.createObjectURL(file),
+          id: `new-img-${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 9)}`,
+        });
+      } else {
+        notify({
+          title: "Invalid File",
+          description: `${file.name}: ${validation.error}`,
+          variant: "destructive",
+        });
+      }
+    });
+    if (validFiles.length > 0) {
+      setNewImages((prev) => [...prev, ...validFiles]);
+    }
+  }, []);
+
+  const handleAddVideos = useCallback((files) => {
+    const validFiles = [];
+    Array.from(files).forEach((file) => {
+      const validation = validateVideoFile(file);
+      if (validation.valid) {
+        validFiles.push({
+          file,
+          preview: URL.createObjectURL(file),
+          id: `new-vid-${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 9)}`,
+        });
+      } else {
+        notify({
+          title: "Invalid File",
+          description: `${file.name}: ${validation.error}`,
+        });
+      }
+    });
+    if (validFiles.length > 0) {
+      setNewVideos((prev) => [...prev, ...validFiles]);
+    }
+  }, []);
+
+  const handleRemoveNewImage = useCallback((itemId) => {
+    setNewImages((prev) => {
+      const item = prev.find((i) => i.id === itemId);
+      if (item) URL.revokeObjectURL(item.preview);
+      return prev.filter((i) => i.id !== itemId);
+    });
+  }, []);
+
+  const handleRemoveNewVideo = useCallback((itemId) => {
+    setNewVideos((prev) => {
+      const item = prev.find((i) => i.id === itemId);
+      if (item) URL.revokeObjectURL(item.preview);
+      return prev.filter((i) => i.id !== itemId);
+    });
+  }, []);
+
+  const handleDeleteExistingImage = useCallback(async (imageId) => {
+    setDeletingImageIds((prev) => [...prev, imageId]);
+    try {
+      await api.deletePortfolioImage(imageId);
+      setExistingPictures((prev) => prev.filter((p) => p.id !== imageId));
+      notify({ title: "Success", description: "Image deleted" });
+    } catch (error) {
+      notify({
+        title: "Error",
+        description: error?.data?.detail || "Failed to delete image",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingImageIds((prev) => prev.filter((id) => id !== imageId));
+    }
+  }, []);
+
+  const handleDeleteExistingVideo = useCallback(async (videoId) => {
+    setDeletingVideoIds((prev) => [...prev, videoId]);
+    try {
+      await api.deletePortfolioVideo(videoId);
+      setExistingVideos((prev) => prev.filter((v) => v.id !== videoId));
+      notify({ title: "Success", description: "Video deleted" });
+    } catch (error) {
+      notify({
+        title: "Error",
+        description: error?.data?.detail || "Failed to delete video",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingVideoIds((prev) => prev.filter((id) => id !== videoId));
+    }
+  }, []);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
