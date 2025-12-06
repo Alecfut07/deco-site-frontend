@@ -25,11 +25,18 @@ import {
 } from "lucide-react";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_FILE_TYPES = [
   "image/jpeg",
   "image/png",
   "image/gif",
   "image/webp",
+];
+const ALLOWED_VIDEO_TYPES = [
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/x-msvideo",
 ];
 
 const formatFileSize = (bytes) => {
@@ -52,6 +59,26 @@ const validateImageFile = (file) => {
       valid: false,
       error: `File size exceeds ${formatFileSize(
         MAX_FILE_SIZE
+      )}. Please select a smaller file.`,
+    };
+  }
+  return {
+    valid: true,
+  };
+};
+
+const validateVideoFile = (file) => {
+  if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+    return {
+      valid: false,
+      error: "Invalid file type. Please select a MP4, WebM, MOV, or AVI.",
+    };
+  }
+  if (file.size > MAX_VIDEO_SIZE) {
+    return {
+      valid: false,
+      error: `File size exceeds ${formatFileSize(
+        MAX_VIDEO_SIZE
       )}. Please select a smaller file.`,
     };
   }
