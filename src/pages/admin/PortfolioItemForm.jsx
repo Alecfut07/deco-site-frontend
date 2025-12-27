@@ -1039,6 +1039,19 @@ const PortfolioItemForm = () => {
               <Label htmlFor="before-after">Before/After Project</Label>
             </div>
 
+            {errors.media && (
+              <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+                <div className="flex items-center gap-2 text-destructive">
+                  <AlertCircle className="w-4 h-4" />
+                  <p className="text-sm font-medium">{errors.media}</p>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Please add at least one of: main image, before/after images,
+                  gallery images, or videos.
+                </p>
+              </div>
+            )}
+
             <div className="space-y-2">
               <ImageUploadField
                 id="image"
