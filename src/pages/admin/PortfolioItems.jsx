@@ -13,7 +13,7 @@ import {
   Video,
   Search,
   X,
-  Image,
+  Image as ImageIcon,
 } from "lucide-react";
 import { SkeletonGrid } from "@/components/admin/SkeletonCard";
 import { EmptyState } from "@/components/admin/EmptyState";
@@ -134,7 +134,7 @@ const PortfolioItems = () => {
         </div>
       ) : items.length === 0 ? (
         <EmptyState
-          icon={Image}
+          icon={ImageIcon}
           title={search ? "No portfolio items found" : "No portfolio items yet"}
           description={
             search
@@ -157,16 +157,34 @@ const PortfolioItems = () => {
                 className="overflow-hidden group transition-all duration-200 hover:shadow-lg hover:-translate-y-1"
               >
                 <div className="relative">
-                  {item.thumbnail_url ? (
+                  {item.thumbnail_url ||
+                  item.gallery_image_url ||
+                  item.image_url ? (
                     <img
-                      src={item.thumbnail_url}
+                      src={
+                        item.thumbnail_url ||
+                        item.gallery_image_url ||
+                        item.image_url
+                      }
                       alt={item.title}
                       className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                     />
+                  ) : item.videos && item.videos.length > 0 ? (
+                    <div className="w-full h-48 bg-muted flex items-center justify-center relative">
+                      <Video className="w-12 h-12 text-muted-foreground" />
+                      {item.videos[0]?.thumbnail_url && (
+                        <img
+                          src={item.videos[0].thumbnail_url}
+                          alt={item.title}
+                          className="absolute inset-0 w-full h-full object-cover opacity-50"
+                          loading="lazy"
+                        />
+                      )}
+                    </div>
                   ) : (
                     <div className="w-full h-48 bg-muted flex items-center justify-center">
-                      <Image className="w-12 h-12 text-muted-foreground" />
+                      <ImageIcon className="w-12 h-12 text-muted-foreground" />
                     </div>
                   )}
                   {item.is_before_after && (
