@@ -1055,7 +1055,7 @@ const PortfolioItemForm = () => {
             <div className="space-y-2">
               <ImageUploadField
                 id="image"
-                label="Main Image"
+                label="Main Image (Optional)"
                 file={formData.image}
                 existingUrl={existingImages.image_url}
                 onFileChange={(file) =>
@@ -1070,7 +1070,7 @@ const PortfolioItemForm = () => {
                 <div className="space-y-2">
                   <ImageUploadField
                     id="before"
-                    label="Before Image"
+                    label="Before Image (Optional)"
                     file={formData.before_image}
                     existingUrl={existingImages.before_image_url}
                     onFileChange={(file) =>
@@ -1082,7 +1082,7 @@ const PortfolioItemForm = () => {
                 <div className="space-y-2">
                   <ImageUploadField
                     id="after"
-                    label="After Image"
+                    label="After Image (Optional)"
                     file={formData.after_image}
                     existingUrl={existingImages.after_image_url}
                     onFileChange={(file) =>
