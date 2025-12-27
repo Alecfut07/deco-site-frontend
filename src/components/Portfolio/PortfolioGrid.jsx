@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Video } from "lucide-react";
 
 const getCoverImage = (item) => {
   // Priority: thumbnail_url > gallery_image_url > image_url
@@ -33,9 +34,12 @@ const PortfolioGrid = ({ items = [], onItemClick }) => {
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-fade-in">
       {items.map((item) => {
         const coverImage = getCoverImage(item);
+        const hasOnlyVideos =
+          !coverImage && item?.videos && item.videos.length > 0;
         const categoryLabel =
           item?.category?.name ?? item?.category ?? "Uncategorized";
         const imageCount = item?.image_count ?? item?.pictures?.length ?? 0;
+        const videoCount = item?.videos?.length ?? 0;
 
         return (
           <Card
@@ -58,9 +62,21 @@ const PortfolioGrid = ({ items = [], onItemClick }) => {
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                   loading="lazy"
                 />
+              ) : hasOnlyVideos ? (
+                <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground relative">
+                  <Video className="w-16 h-16 opacity-50" />
+                  {videoCount > 0 && (
+                    <Badge
+                      className="absolute bottom-2 right-2"
+                      variant="secondary"
+                    >
+                      {videoCount} video{videoCount > 1 ? "s" : ""}
+                    </Badge>
+                  )}
+                </div>
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
-                  No image
+                  No media
                 </div>
               )}
 
