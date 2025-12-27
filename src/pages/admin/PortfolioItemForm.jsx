@@ -657,7 +657,7 @@ const PortfolioItemForm = () => {
       newErrors.service_id = "Service is required";
     }
 
-    // Validate files if selected
+    // Validate files if selected (optional now)
     if (formData.image) {
       const validation = validateImageFile(formData.image);
       if (!validation.valid) newErrors.image = validation.error;
@@ -669,6 +669,25 @@ const PortfolioItemForm = () => {
     if (formData.after_image) {
       const validation = validateImageFile(formData.after_image);
       if (!validation.valid) newErrors.after_image = validation.error;
+    }
+
+    // Validate that at least one media exists
+    const hasMainImage = formData.image || existingImages.image_url;
+    const hasBeforeAfterImages =
+      (formData.before_image || existingImages.before_image_url) &&
+      (formData.after_image || existingImages.after_image_url);
+    const hasGalleryImages =
+      existingPictures.length > 0 || newImages.length > 0;
+    const hasVideos = existingVideos.length > 0 || newVideos.length > 0;
+
+    if (
+      !hasMainImage &&
+      !hasBeforeAfterImages &&
+      !hasGalleryImages &&
+      !hasVideos
+    ) {
+      newErrors.media =
+        "At least one media is required: main image, before/after images, gallery images, or videos";
     }
 
     setErrors(newErrors);
