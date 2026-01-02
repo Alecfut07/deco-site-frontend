@@ -523,8 +523,13 @@ const MultiMediaSection = ({
         </div>
       )}
 
-      {/* Delte confirmation dialog */}
-      <AlertDialog>
+      {/* Delete confirmation dialog */}
+      <AlertDialog
+        open={deleteConfirm !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteConfirm(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -536,7 +541,9 @@ const MultiMediaSection = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setDeleteConfirm(null)}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (deleteConfirm !== null) {
@@ -764,7 +771,7 @@ const PortfolioItemForm = () => {
     try {
       await api.deletePortfolioImage(imageId);
       setExistingPictures((prev) => prev.filter((p) => p.id !== imageId));
-      notify({ title: "Success", description: "Image deleted" });
+      notify({ title: "Success", description: "Image deleted successfully" });
     } catch (error) {
       notify({
         title: "Error",
@@ -781,7 +788,7 @@ const PortfolioItemForm = () => {
     try {
       await api.deletePortfolioVideo(videoId);
       setExistingVideos((prev) => prev.filter((v) => v.id !== videoId));
-      notify({ title: "Success", description: "Video deleted" });
+      notify({ title: "Success", description: "Video deleted successfully" });
     } catch (error) {
       notify({
         title: "Error",
