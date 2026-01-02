@@ -43,7 +43,7 @@ const PortfolioItemMedia = () => {
     try {
       for (const file of Array.from(files)) {
         const formData = new FormData();
-        formData.append("portfolio_item_id", String(id));
+        formData.append("portfolio_item", String(id));
         formData.append("image", file);
         await api.createPortfolioImage(formData);
       }
@@ -73,7 +73,7 @@ const PortfolioItemMedia = () => {
     try {
       for (const file of Array.from(files)) {
         const formData = new FormData();
-        formData.append("portfolio_item_id", id);
+        formData.append("portfolio_item", id);
         formData.append("video", file);
         await api.createPortfolioVideo(formData);
       }
