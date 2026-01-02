@@ -169,9 +169,19 @@ const PortfolioItemMedia = () => {
             {item.pictures?.map((pic) => (
               <Card key={pic.id} className="overflow-hidden">
                 <img
-                  src={pic.thumbnail_url}
+                  src={
+                    pic.thumbnail_url || pic.gallery_image_url || pic.image_url
+                  }
                   alt={pic.caption || ""}
                   className="w-full h-32 sm:h-48 object-cover"
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    if (e.target.src !== pic.image_url) {
+                      e.target.src = pic.image_url || "";
+                    } else {
+                      e.target.style.display = "none";
+                    }
+                  }}
                 />
                 <div className="p-2">
                   <Button
