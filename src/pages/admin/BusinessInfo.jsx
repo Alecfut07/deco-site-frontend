@@ -25,7 +25,7 @@ const BusinessInfo = () => {
       try {
         const data = await api.getBusinessInfo();
         setFormData({
-          name: data?.name || "",
+          name: data?.company_name || data?.name || "",
           tagline: data?.tagline || "",
           phone: data?.phone || "",
           email: data?.email || "",
