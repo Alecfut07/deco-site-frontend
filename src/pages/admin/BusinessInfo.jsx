@@ -23,7 +23,7 @@ const BusinessInfo = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await api.getBusinessInfo();
+        const data = await api.getAdminBusinessInfo();
         setFormData({
           name: data?.company_name || data?.name || "",
           tagline: data?.tagline || "",
@@ -51,7 +51,15 @@ const BusinessInfo = () => {
     setLoading(true);
 
     try {
-      await api.updateBusinessInfo(formData);
+      // Map name back to company_name for the API
+      const payload = {
+        ...formData,
+        company_name: formData.name,
+      };
+      // Remove the name field since API expects company_name
+      delete payload.name;
+
+      await api.updateBusinessInfo(payload);
       notify({ title: "Success", description: "Business info updated." });
     } catch (error) {
       notify({

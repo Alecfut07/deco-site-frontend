@@ -167,6 +167,12 @@ export const api = {
 
   getBusinessInfo: () => apiRequest("/api/business-info/"),
 
+  getAdminBusinessInfo: async () => {
+    const data = await apiRequest("/api/admin/business-info/");
+    // Handle array response - return first item if array, otherwise return data as-is
+    return Array.isArray(data) && data.length > 0 ? data[0] : data;
+  },
+
   updateBusinessInfo: (data) =>
     apiRequest("/api/admin/business-info/", {
       method: "PATCH",
