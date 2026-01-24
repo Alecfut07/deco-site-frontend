@@ -19,7 +19,7 @@ import BeforeAfterSlider from "./BeforeAfterSlider";
 
 const normalizeMedia = (collection = []) =>
   [...collection].sort(
-    (a, b) => (a?.display_order ?? 0) - (b?.display_order ?? 0)
+    (a, b) => (a?.display_order ?? 0) - (b?.display_order ?? 0),
   );
 
 const PortfolioModal = ({ item, onClose }) => {
@@ -28,7 +28,7 @@ const PortfolioModal = ({ item, onClose }) => {
 
   const pictures = useMemo(
     () => normalizeMedia(item?.pictures),
-    [item?.pictures]
+    [item?.pictures],
   );
   const videos = useMemo(() => normalizeMedia(item?.videos), [item?.videos]);
 
