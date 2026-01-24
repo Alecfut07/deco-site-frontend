@@ -204,7 +204,7 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
         <img
           src={afterImage}
           alt="After"
-          className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+          className="absolute inset-0 h-full w-full object-contain pointer-events-none"
           draggable={false}
         />
 
@@ -216,7 +216,7 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
           <img
             src={beforeImage}
             alt="Before"
-            className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+            className="absolute inset-0 h-full w-full object-contain pointer-events-none"
             draggable={false}
           />
         </div>
@@ -255,11 +255,27 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
           </div>
         </div>
 
-        {/* Labels with better visibility */}
-        <div className="absolute left-4 top-4 z-10 rounded-lg bg-black/80 backdrop-blur-sm px-3 py-1.5 text-sm font-semibold text-white shadow-lg">
+        {/* Labels with conditional highlighting */}
+        <div
+          className={`absolute left-4 top-4 z-10 rounded-lg backdrop-blur-sm px-3 py-1.5 text-sm font-semibold shadow-lg transition-all ${
+            position[0] === 0
+              ? "bg-primary text-primary-foreground"
+              : position[0] === 100
+                ? "bg-black/40 text-white/50"
+                : "bg-black/80 text-white"
+          }`}
+        >
           Before
         </div>
-        <div className="absolute right-4 top-4 z-10 rounded-lg bg-black/80 backdrop-blur-sm px-3 py-1.5 text-sm font-semibold text-white shadow-lg">
+        <div
+          className={`absolute right-4 top-4 z-10 rounded-lg backdrop-blur-sm px-3 py-1.5 text-sm font-semibold shadow-lg transition-all ${
+            position[0] === 100
+              ? "bg-primary text-primary-foreground"
+              : position[0] === 0
+                ? "bg-black/40 text-white/50"
+                : "bg-black/80 text-white"
+          }`}
+        >
           After
         </div>
       </div>
