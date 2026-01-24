@@ -9,6 +9,10 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef(null);
   const sliderRef = useRef(null);
+  const beforeImgRef = useRef(null);
+  const afterImgRef = useRef(null);
+  const [imageAspectRatio, setImageAspectRatio] = useState(null);
+  const [containerClass, setContainerClass] = useState("aspect-video");
 
   // Update position from mouse/touch
   const updatePosition = useCallback((clientX) => {
@@ -152,6 +156,71 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
+  // Dectect image orientation and adjust container
+  useEffect(() => {
+    const detectImageOrientation = () => {
+      if (!beforeImgRef.current || !afterImgRef.current) return;
+
+      const beforeImg = beforeImgRef.current;
+      const afterImg = afterImgRef.current;
+
+      // Wait for both images to load
+      if (!beforeImg.complete || !afterImg.complete) {
+        const handleLoad = () => {
+          if (beforeImg.complete && afterImg.complete) {
+            calculateAspectRatio();
+          }
+        };
+        beforeImg.addEventListener("load", handleLoad);
+        afterImg.addEventListener("load", handleLoad);
+        return () => {
+          beforeImg.removeEventListener("load", handleLoad);
+          afterImg.removeEventListener("load", handleLoad);
+        };
+      }
+
+      calculateAspectRatio();
+    };
+
+    const calculateAspectRatio = () => {
+      const beforeImg = beforeImgRef.current;
+      const afterImg = afterImgRef.current;
+
+      if (!beforeImg || !afterImg) return;
+
+      // Get natural dimensions
+      const beforeWidth = beforeImg.naturalWidth || beforeImg.width;
+      const beforeHeight = beforeImg.naturalHeight || beforeImg.height;
+      const afterWidth = afterImg.naturalWidth || afterImg.width;
+      const afterHeight = afterImg.naturalHeight || afterImg.height;
+
+      // Calculate aspect ratios
+      const beforeRatio = beforeWidth / beforeHeight;
+      const afterRatio = afterWidth / afterHeight;
+
+      // Use average or the first image's ratio
+      const avgRatio = (beforeRatio + afterRatio) / 2;
+      const isPortrait = avgRatio < 1;
+
+      setImageAspectRatio(avgRatio);
+
+      // Set container class based on orientation
+      if (isPortrait) {
+        // Portrait: use aspect-[3/4] or calculate from ratio
+        setContainerClass("aspect-[3/4]");
+      } else {
+        // Landscape: use aspect-video (16:9) or wider
+        if (avgRatio > 1.5) {
+          setContainerClass("aspect-[21/9]"); // Ultra-wide
+        } else {
+          setContainerClass("aspect-video"); // Standard 16:9
+        }
+      }
+    };
+
+    detectImageOrientation();
+  }, [beforeImage, afterImage]);
+
   return (
     <div className="space-y-4">
       {/* Controls Bar */}
@@ -194,7 +263,14 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
       {/* Main Slider */}
       <div
         ref={containerRef}
-        className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted cursor-ew-resize select-none"
+        className={`relative w-full overflow-hidden rounded-lg bg-muted cursor-ew-resize select-none ${
+          containerClass || "aspect-video"
+        }`}
+        style={{
+          aspectRatio: imageAspectRatio ? `${imageAspectRatio}` : "16/9",
+          maxHeight: "70vh",
+          maxWidth: "100%",
+        }}
         onClick={handleImageClick}
         role="button"
         tabIndex={0}
@@ -202,10 +278,39 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
       >
         {/* After Image (Bottom Layer) */}
         <img
+          ref={afterImgRef}
           src={afterImage}
           alt="After"
           className="absolute inset-0 h-full w-full object-contain pointer-events-none"
           draggable={false}
+          onLoad={() => {
+            // Trigger recalculation when image loads
+            if (
+              beforeImgRef.current?.complete &&
+              afterImgRef.current?.complete
+            ) {
+              const beforeImg = beforeImgRef.current;
+              const afterImg = afterImgRef.current;
+              const beforeRatio =
+                (beforeImg.naturalWidth || beforeImg.width) /
+                (beforeImg.naturalHeight || beforeImg.height);
+              const afterRatio =
+                (afterImg.naturalWidth || afterImg.width) /
+                (afterImg.naturalHeight || afterImg.height);
+              const avgRatio = (beforeRatio + afterRatio) / 2;
+              const isPortrait = avgRatio < 1;
+
+              if (isPortrait) {
+                setContainerClass("aspect-[3/4]");
+              } else {
+                if (avgRatio > 1.5) {
+                  setContainerClass("aspect-[21/9]");
+                } else {
+                  setContainerClass("aspect-video");
+                }
+              }
+            }
+          }}
         />
 
         {/* Before Image (Top Layer with Clip) */}
@@ -214,10 +319,39 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
           style={{ clipPath: `inset(0 ${100 - position[0]}% 0 0)` }}
         >
           <img
+            ref={beforeImgRef}
             src={beforeImage}
             alt="Before"
             className="absolute inset-0 h-full w-full object-contain pointer-events-none"
             draggable={false}
+            onLoad={() => {
+              // Trigger recalculation when image loads
+              if (
+                beforeImgRef.current?.complete &&
+                afterImgRef.current?.complete
+              ) {
+                const beforeImg = beforeImgRef.current;
+                const afterImg = afterImgRef.current;
+                const beforeRatio =
+                  (beforeImg.naturalWidth || beforeImg.width) /
+                  (beforeImg.naturalHeight || beforeImg.height);
+                const afterRatio =
+                  (afterImg.naturalWidth || afterImg.width) /
+                  (afterImg.naturalHeight || afterImg.height);
+                const avgRatio = (beforeRatio + afterRatio) / 2;
+                const isPortrait = avgRatio < 1;
+
+                if (isPortrait) {
+                  setContainerClass("aspect-[3/4]");
+                } else {
+                  if (avgRatio > 1.5) {
+                    setContainerClass("aspect-[21/9]");
+                  } else {
+                    setContainerClass("aspect-video");
+                  }
+                }
+              }
+            }}
           />
         </div>
 
