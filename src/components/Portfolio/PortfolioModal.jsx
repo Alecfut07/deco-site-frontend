@@ -87,6 +87,27 @@ const PortfolioModal = ({ item, onClose }) => {
           </DialogTitle>
         </DialogHeader>
 
+        {/* Description */}
+        <div>
+          {item?.description && (
+            <p className="mb-4 text-base leading-relaxed text-foreground">
+              {item.description}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {item?.category && (
+              <Badge variant="secondary">
+                {item.category?.name ?? item.category}
+              </Badge>
+            )}
+            {item?.service && (
+              <Badge variant="outline">
+                {item.service?.name ?? item.service}
+              </Badge>
+            )}
+          </div>
+        </div>
+
         <div className="space-y-6">
           {/* Before/After Slider */}
           {item?.has_before_after &&
@@ -97,27 +118,6 @@ const PortfolioModal = ({ item, onClose }) => {
                 afterImage={item.after_image_url}
               />
             )}
-
-          {/* Description */}
-          <div>
-            {item?.description && (
-              <p className="mb-4 text-base leading-relaxed text-foreground">
-                {item.description}
-              </p>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {item?.category && (
-                <Badge variant="secondary">
-                  {item.category?.name ?? item.category}
-                </Badge>
-              )}
-              {item?.service && (
-                <Badge variant="outline">
-                  {item.service?.name ?? item.service}
-                </Badge>
-              )}
-            </div>
-          </div>
 
           <Tabs defaultValue="pictures" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
