@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import BeforeAfterSlider from "./BeforeAfterSlider";
+import { usePortfolioItem } from "@/services/api";
 
 const normalizeMedia = (collection = []) =>
   [...collection].sort(
@@ -26,11 +27,20 @@ const PortfolioModal = ({ item, onClose }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [playingVideo, setPlayingVideo] = useState(null);
 
+  // Fetch fresh data when modal opens to get latest videos/images
+  const { data: freshItem, isLoading } = usePortfolioItem(item.id);
+
+  // Use fresh data if available, otherwise fall back to passed item
+  const currentItem = freshItem || item;
+
   const pictures = useMemo(
-    () => normalizeMedia(item?.pictures),
-    [item?.pictures],
+    () => normalizeMedia(currentItem?.pictures),
+    [currentItem?.pictures],
   );
-  const videos = useMemo(() => normalizeMedia(item?.videos), [item?.videos]);
+  const videos = useMemo(
+    () => normalizeMedia(currentItem?.videos),
+    [currentItem?.videos],
+  );
 
   // Get full image URL fo current index
   const getImageUrl = (picture) => {
@@ -78,31 +88,46 @@ const PortfolioModal = ({ item, onClose }) => {
 
   const currentImage = pictures[currentImageIndex];
 
+  // Show loading state while fetching fresh data
+  if (isLoading && !item) {
+    return (
+      <Dialog open={true} onOpenChange={onClose}>
+        <DialogContent className="max-w-5xl">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-muted-foreground">
+              Loading portfolio data...
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold text-foreground">
-            {item.title}
+            {currentItem?.title || item?.title}
           </DialogTitle>
         </DialogHeader>
 
         {/* Description */}
         <div>
-          {item?.description && (
+          {currentItem?.description && (
             <p className="mb-4 text-base leading-relaxed text-foreground">
-              {item.description}
+              {currentItem.description}
             </p>
           )}
           <div className="flex flex-wrap gap-2">
-            {item?.category && (
+            {currentItem?.category && (
               <Badge variant="secondary">
-                {item.category?.name ?? item.category}
+                {currentItem.category?.name ?? currentItem.category}
               </Badge>
             )}
-            {item?.service && (
+            {currentItem?.service && (
               <Badge variant="outline">
-                {item.service?.name ?? item.service}
+                {currentItem.service?.name ?? currentItem.service}
               </Badge>
             )}
           </div>
@@ -110,12 +135,12 @@ const PortfolioModal = ({ item, onClose }) => {
 
         <div className="space-y-6">
           {/* Before/After Slider */}
-          {item?.has_before_after &&
-            item?.before_image_url &&
-            item?.after_image_url && (
+          {currentItem?.has_before_after &&
+            currentItem?.before_image_url &&
+            currentItem?.after_image_url && (
               <BeforeAfterSlider
-                beforeImage={item.before_image_url}
-                afterImage={item.after_image_url}
+                beforeImage={currentItem.before_image_url}
+                afterImage={currentItem.after_image_url}
               />
             )}
 
@@ -142,7 +167,7 @@ const PortfolioModal = ({ item, onClose }) => {
                           src={getImageUrl(currentImage)}
                           alt={
                             currentImage.caption ||
-                            `${item.title} - Image ${currentImageIndex + 1}`
+                            `${currentItem?.title || item?.title} - Image ${currentImageIndex + 1}`
                           }
                           className="h-full w-full object-contain transition-opacity duration-300"
                           loading="lazy"
@@ -271,7 +296,10 @@ const PortfolioModal = ({ item, onClose }) => {
                           >
                             <img
                               src={video.thumbnail_url}
-                              alt={video.caption || `${item.title} video`}
+                              alt={
+                                video.caption ||
+                                `${currentItem?.title || item?.title} video`
+                              }
                               className="h-48 w-full object-cover"
                               loading="lazy"
                             />
