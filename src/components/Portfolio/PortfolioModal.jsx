@@ -293,61 +293,140 @@ const PortfolioModal = ({ item, onClose }) => {
 
             <TabsContent value="videos" className="space-y-4">
               {videos.length ? (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {videos.map((video) => {
-                    const isPlaying =
-                      playingVideo === (video.id ?? video.video_url);
-
-                    return (
-                      <div
-                        key={video.id ?? video.video_url}
-                        className="space-y-2"
-                      >
-                        {isPlaying ? (
-                          <video
-                            src={video.video_url}
-                            className="w-full rounded-lg"
-                            controls
-                            autoPlay
-                            onEnded={() => setPlayingVideo(null)}
-                          >
-                            Your browser does not support the video tag.
-                          </video>
-                        ) : (
-                          <button
-                            type="button"
-                            className="group relative block overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                            onClick={() =>
-                              handleVideoToggle(video.id ?? video.video_url)
-                            }
-                          >
-                            <img
-                              src={video.thumbnail_url}
-                              alt={
-                                video.caption ||
-                                `${currentItem?.title || item?.title} video`
+                <div className="space-y-4">
+                  {/* Main Video Viewer */}
+                  <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted group">
+                    {(() => {
+                      const currentVideo = videos[currentVideoIndex];
+                      if (!currentVideo) return null;
+                      const videoId = currentVideo.id ?? currentVideo.video_url;
+                      const isPlaying = playingVideo === videoId;
+                      return (
+                        <>
+                          {isPlaying ? (
+                            <video
+                              className="h-full w-full object-contain"
+                              src={currentVideo.video_url}
+                              controls
+                              autoPlay
+                              playsInline
+                              onEnded={() => setPlayingVideo(null)}
+                              aria-label={
+                                currentVideo.caption ||
+                                `Video ${currentVideoIndex + 1}`
                               }
-                              className="h-48 w-full object-cover"
-                              loading="lazy"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors group-hover:bg-black/40">
-                              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-primary shadow-lg">
+                            >
+                              Your browser does not support the video tag.
+                            </video>
+                          ) : (
+                            <button
+                              type="button"
+                              className="absolute inset-0 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg"
+                              onClick={() => setPlayingVideo(videoId)}
+                              aria-label={`Play video ${currentVideoIndex + 1}`}
+                            >
+                              {currentVideo.thumbnail_url ? (
+                                <img
+                                  src={currentVideo.thumbnail_url}
+                                  alt={
+                                    currentVideo.caption ||
+                                    `Video ${currentVideoIndex + 1}`
+                                  }
+                                  className="absolute inset-0 h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                                  <Play
+                                    className="h-16 w-16 text-muted-foreground"
+                                    aria-hidden="true"
+                                  />
+                                </div>
+                              )}
+                              <span className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-black/50 text-white">
+                                <Play />
+                              </span>
+                            </button>
+                          )}
+                          {videos.length > 1 && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-black/50 text-white hover:bg-black/70 opacity-0 transition-opacity group-hover:opacity-100"
+                                onClick={goToPreviousVideo}
+                                aria-label="Previous video"
+                              >
+                                <ChevronLeft className="h-6 w-6" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-black/50 text-white hover:bg-black/70 opacity-0 transition-opacity group-hover:opacity-100"
+                                onClick={goToNextVideo}
+                                aria-label="Next video"
+                              >
+                                <ChevronRight className="h-6 w-6" />
+                              </Button>
+                            </>
+                          )}
+                          {videos.length > 1 && (
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded bg-black/70 px-3 py-1 text-sm text-white">
+                              {currentVideoIndex + 1} / {videos.length}
+                            </div>
+                          )}
+                          {currentVideo.caption && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-3">
+                              <p className="text-sm text-white">
+                                {currentVideo.caption}
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Thumbnail strip */}
+                  {videos.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                      {videos.map((video, index) => {
+                        const isActive = index === currentVideoIndex;
+                        const thumbUrl = video.thumbnail_url;
+                        return (
+                          <button
+                            key={video.id ?? video.video_url ?? index}
+                            type="button"
+                            onClick={() => goToVideo(index)}
+                            className={`relative flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all aspect-video w-24 ${
+                              isActive
+                                ? "border-primary ring-2 ring-primary ring-offset-2"
+                                : "border-transparent hover:border-muted-foreground/50"
+                            }`}
+                            aria-label={`Go to video ${index + 1}`}
+                          >
+                            {thumbUrl ? (
+                              <img
+                                src={thumbUrl}
+                                alt={video.caption || `Video ${index + 1}`}
+                                className="h-full w-full object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center bg-muted">
                                 <Play
-                                  className="ml-1 h-8 w-8"
+                                  className="h-6 w-6 text-muted-foreground"
                                   aria-hidden="true"
                                 />
-                              </span>
-                            </div>
+                              </div>
+                            )}
+                            {isActive && (
+                              <div className="absolute inset-0 bg-primary/20" />
+                            )}
                           </button>
-                        )}
-                        {video.caption && (
-                          <p className="text-sm text-muted-foreground">
-                            {video.caption}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 py-12 text-muted-foreground">
