@@ -25,6 +25,8 @@ const normalizeMedia = (collection = []) =>
 
 const PortfolioModal = ({ item, onClose }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState("pictures");
   const [playingVideo, setPlayingVideo] = useState(null);
 
   // Fetch fresh data when modal opens to get latest videos/images
@@ -42,6 +44,11 @@ const PortfolioModal = ({ item, onClose }) => {
     [currentItem?.videos],
   );
 
+  useEffect(() => {
+    setCurrentVideoIndex(0);
+    setPlayingVideo(null);
+  }, [currentItem?.id]);
+
   // Get full image URL fo current index
   const getImageUrl = (picture) => {
     return (
@@ -49,7 +56,7 @@ const PortfolioModal = ({ item, onClose }) => {
     );
   };
 
-  // Navigation handlers
+  // Navigation Pictures Handlers
   const goToPrevious = useCallback(() => {
     setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : pictures.length - 1));
   }, [pictures.length]);
@@ -61,6 +68,22 @@ const PortfolioModal = ({ item, onClose }) => {
   const goToImage = (index) => {
     setCurrentImageIndex(index);
   };
+
+  // Navigation Videos Handlers
+  const goToVideo = (index) => {
+    setCurrentVideoIndex(index);
+    setPlayingVideo(
+      videos[index] ? (videos[index].id ?? videos[index].video_url) : null,
+    );
+  };
+
+  const goToPreviousVideo = useCallback(() => {
+    setCurrentVideoIndex((prev) => (prev > 0 ? prev - 1 : videos.length - 1));
+  }, [videos.length]);
+
+  const goToNextVideo = useCallback(() => {
+    setCurrentVideoIndex((prev) => (prev < videos.length - 1 ? prev + 1 : 0));
+  }, [videos.length]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -144,7 +167,11 @@ const PortfolioModal = ({ item, onClose }) => {
               />
             )}
 
-          <Tabs defaultValue="pictures" className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="pictures">
                 <ImageIcon className="mr-2 h-4 w-4" aria-hidden="true" />
