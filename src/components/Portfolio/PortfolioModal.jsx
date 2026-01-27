@@ -78,32 +78,70 @@ const PortfolioModal = ({ item, onClose }) => {
   };
 
   const goToPreviousVideo = useCallback(() => {
-    setCurrentVideoIndex((prev) => (prev > 0 ? prev - 1 : videos.length - 1));
-  }, [videos.length]);
+    setCurrentVideoIndex((prev) => {
+      const next = prev > 0 ? prev - 1 : videos.length - 1;
+      setPlayingVideo(
+        videos[next] ? (videos[next].id ?? videos[next].video_url) : null,
+      );
+      return next;
+    });
+  }, [videos]);
 
   const goToNextVideo = useCallback(() => {
-    setCurrentVideoIndex((prev) => (prev < videos.length - 1 ? prev + 1 : 0));
-  }, [videos.length]);
+    setCurrentVideoIndex((prev) => {
+      const next = prev < videos.length - 1 ? prev + 1 : 0;
+      setPlayingVideo(
+        videos[next] ? (videos[next].id ?? videos[next].video_url) : null,
+      );
+      return next;
+    });
+  }, [videos]);
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (pictures.length === 0) return;
-
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        goToPrevious();
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        goToNext();
-      } else if (e.key === "Escape") {
+      if (e.key === "Escape") {
         onClose();
+        return;
+      }
+      if (activeTab === "videos" && videos.length > 0) {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          goToPreviousVideo();
+          return;
+        }
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          goToNextVideo();
+          return;
+        }
+      }
+      if (activeTab == "pictures" && pictures.length > 0) {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          goToPrevious();
+          return;
+        }
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          goToNext();
+          return;
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [goToPrevious, goToNext, pictures.length, onClose]);
+  }, [
+    activeTab,
+    goToPrevious,
+    goToNext,
+    goToPreviousVideo,
+    goToNextVideo,
+    pictures.length,
+    videos.length,
+    onClose,
+  ]);
 
   const handleVideoToggle = (videoId) => {
     setPlayingVideo((current) => (current === videoId ? null : videoId));
