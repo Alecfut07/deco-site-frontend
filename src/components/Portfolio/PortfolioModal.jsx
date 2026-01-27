@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,7 @@ const PortfolioModal = ({ item, onClose }) => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("pictures");
   const [playingVideo, setPlayingVideo] = useState(null);
+  const videoRef = useRef(null);
 
   // Fetch fresh data when modal opens to get latest videos/images
   const { data: freshItem, isLoading } = usePortfolioItem(item.id);
@@ -142,6 +143,11 @@ const PortfolioModal = ({ item, onClose }) => {
     videos.length,
     onClose,
   ]);
+
+  // Video Effect Pause
+  useEffect(() => {
+    videoRef.current?.pause();
+  }, [currentVideoIndex]);
 
   const handleVideoToggle = (videoId) => {
     setPlayingVideo((current) => (current === videoId ? null : videoId));
@@ -343,6 +349,7 @@ const PortfolioModal = ({ item, onClose }) => {
                         <>
                           {isPlaying ? (
                             <video
+                              ref={videoRef}
                               className="h-full w-full object-contain"
                               src={currentVideo.video_url}
                               controls
