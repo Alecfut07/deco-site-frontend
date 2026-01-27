@@ -29,6 +29,8 @@ const PortfolioModal = ({ item, onClose }) => {
   const [activeTab, setActiveTab] = useState("pictures");
   const [playingVideo, setPlayingVideo] = useState(null);
   const videoRef = useRef(null);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   // Fetch fresh data when modal opens to get latest videos/images
   const { data: freshItem, isLoading } = usePortfolioItem(item.id);
@@ -72,6 +74,8 @@ const PortfolioModal = ({ item, onClose }) => {
 
   // Navigation Videos Handlers
   const goToVideo = (index) => {
+    setVideoError(false);
+    setVideoLoading(true);
     setCurrentVideoIndex(index);
     setPlayingVideo(
       videos[index] ? (videos[index].id ?? videos[index].video_url) : null,
@@ -355,6 +359,14 @@ const PortfolioModal = ({ item, onClose }) => {
                               controls
                               autoPlay
                               playsInline
+                              onLoadedData={() => {
+                                setVideoLoading(false);
+                                setVideoError(false);
+                              }}
+                              onError={() => {
+                                setVideoLoading(false);
+                                setVideoError(true);
+                              }}
                               onEnded={() => setPlayingVideo(null)}
                               aria-label={
                                 currentVideo.caption ||
@@ -391,6 +403,32 @@ const PortfolioModal = ({ item, onClose }) => {
                                 <Play />
                               </span>
                             </button>
+                          )}
+                          {videoLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+                              <div className="rounded-full border-2 border-white border-t-transparent h-8 w-8 animate-spin" />
+                            </div>
+                          )}
+                          {videoError && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 rounded-lg text-white px-4">
+                              <p className="text-sm">
+                                This video couldn't be loaded.
+                              </p>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="mt-2"
+                                onClick={() => {
+                                  setVideoError(false);
+                                  setVideoLoading(true);
+                                  if (videoRef.current) {
+                                    videoRef.current.load();
+                                  }
+                                }}
+                              >
+                                Try Again
+                              </Button>
+                            </div>
                           )}
                           {videos.length > 1 && (
                             <>
