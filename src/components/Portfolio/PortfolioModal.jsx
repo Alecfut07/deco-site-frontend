@@ -148,11 +148,6 @@ const PortfolioModal = ({ item, onClose }) => {
     onClose,
   ]);
 
-  // Video Effect Pause
-  useEffect(() => {
-    videoRef.current?.pause();
-  }, [currentVideoIndex]);
-
   const handleVideoToggle = (videoId) => {
     setPlayingVideo((current) => (current === videoId ? null : videoId));
   };
