@@ -20,7 +20,7 @@ import { usePortfolioItem } from "@/services/api";
 
 const normalizeMedia = (collection = []) =>
   [...collection].sort(
-    (a, b) => (a?.display_order ?? 0) - (b?.display_order ?? 0),
+    (a, b) => (a?.display_order ?? 0) - (b?.display_order ?? 0)
   );
 
 const PortfolioModal = ({ item, onClose }) => {
@@ -40,11 +40,11 @@ const PortfolioModal = ({ item, onClose }) => {
 
   const pictures = useMemo(
     () => normalizeMedia(currentItem?.pictures),
-    [currentItem?.pictures],
+    [currentItem?.pictures]
   );
   const videos = useMemo(
     () => normalizeMedia(currentItem?.videos),
-    [currentItem?.videos],
+    [currentItem?.videos]
   );
 
   useEffect(() => {
@@ -78,7 +78,7 @@ const PortfolioModal = ({ item, onClose }) => {
     setVideoLoading(true);
     setCurrentVideoIndex(index);
     setPlayingVideo(
-      videos[index] ? (videos[index].id ?? videos[index].video_url) : null,
+      videos[index] ? videos[index].id ?? videos[index].video_url : null
     );
   };
 
@@ -86,7 +86,7 @@ const PortfolioModal = ({ item, onClose }) => {
     setCurrentVideoIndex((prev) => {
       const next = prev > 0 ? prev - 1 : videos.length - 1;
       setPlayingVideo(
-        videos[next] ? (videos[next].id ?? videos[next].video_url) : null,
+        videos[next] ? videos[next].id ?? videos[next].video_url : null
       );
       return next;
     });
@@ -96,7 +96,7 @@ const PortfolioModal = ({ item, onClose }) => {
     setCurrentVideoIndex((prev) => {
       const next = prev < videos.length - 1 ? prev + 1 : 0;
       setPlayingVideo(
-        videos[next] ? (videos[next].id ?? videos[next].video_url) : null,
+        videos[next] ? videos[next].id ?? videos[next].video_url : null
       );
       return next;
     });
@@ -121,7 +121,7 @@ const PortfolioModal = ({ item, onClose }) => {
           return;
         }
       }
-      if (activeTab == "pictures" && pictures.length > 0) {
+      if (activeTab === "pictures" && pictures.length > 0) {
         if (e.key === "ArrowLeft") {
           e.preventDefault();
           goToPrevious();
@@ -242,7 +242,9 @@ const PortfolioModal = ({ item, onClose }) => {
                           src={getImageUrl(currentImage)}
                           alt={
                             currentImage.caption ||
-                            `${currentItem?.title || item?.title} - Image ${currentImageIndex + 1}`
+                            `${currentItem?.title || item?.title} - Image ${
+                              currentImageIndex + 1
+                            }`
                           }
                           className="h-full w-full object-contain transition-opacity duration-300"
                           loading="lazy"
