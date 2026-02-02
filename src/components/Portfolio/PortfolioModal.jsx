@@ -372,7 +372,11 @@ const PortfolioModal = ({ item, onClose }) => {
                             <button
                               type="button"
                               className="absolute inset-0 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg"
-                              onClick={() => setPlayingVideo(videoId)}
+                              onClick={() => {
+                                setVideoLoading(true);
+                                setVideoError(false);
+                                setPlayingVideo(videoId);
+                              }}
                               aria-label={`Play video ${currentVideoIndex + 1}`}
                             >
                               {currentVideo.thumbnail_url ? (
