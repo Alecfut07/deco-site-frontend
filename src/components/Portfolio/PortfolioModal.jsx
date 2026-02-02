@@ -148,10 +148,6 @@ const PortfolioModal = ({ item, onClose }) => {
     onClose,
   ]);
 
-  const handleVideoToggle = (videoId) => {
-    setPlayingVideo((current) => (current === videoId ? null : videoId));
-  };
-
   const currentImage = pictures[currentImageIndex];
 
   // Show loading state while fetching fresh data
