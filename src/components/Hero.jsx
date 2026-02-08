@@ -2,10 +2,15 @@ import { Phone, Mail, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import { useBusinessInfo } from "../services/api";
+import { HeroSkeleton } from "@/components/SkeletonSection";
 import heroBackground from "@/assets/hero-background.jpg";
 
 const Hero = () => {
   const { data: businessInfo, isLoading } = useBusinessInfo();
+
+  if (isLoading) {
+    return <HeroSkeleton />;
+  }
 
   return (
     <section id="home" className="relative min-h-screen flex items-center">

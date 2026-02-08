@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Bath, ChefHat, Home, Wrench, Paintbrush, Hammer } from "lucide-react";
 import { motion } from "motion/react";
+import { ServicesSkeleton } from "@/components/SkeletonSection";
 import { useServices } from "../services/api";
 
 // Icon mapping for services
@@ -23,16 +24,7 @@ const Services = () => {
   const { data: servicesData = [], isLoading } = useServices();
 
   if (isLoading) {
-    return (
-      <section id="services" className="py-20 bg-subtle-gradient">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p>Loading services...</p>
-          </div>
-        </div>
-      </section>
-    );
+    return <ServicesSkeleton />;
   }
 
   // Handle both array and paginated response formats
