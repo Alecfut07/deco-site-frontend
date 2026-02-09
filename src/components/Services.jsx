@@ -98,55 +98,59 @@ const Services = () => {
         </motion.div>
 
         {hasServices ? (
-          categories.map((category) => {
-            const Icon = categoryIcons[category] || categoryIcons["default"];
-
-            return (
-              <motion.div
-                key={category}
-                className="mb-12"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <Icon className="w-8 h-8 text-primary" />
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+          <>
+            {/* Category tabs */}
+            <div className="flex flex-wrap justify-center gap-2 mb-10">
+              {categories.map((category) => {
+                const Icon =
+                  categoryIcons[category] || categoryIcons["default"];
+                const isActive = selectedCategory === category;
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setSelectedCategory(category)}
+                    className={cn(
+                      "flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all",
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                    )}
+                  >
+                    <Icon className="w-5 h-5" />
                     {category}
-                  </h3>
-                </div>
+                  </button>
+                );
+              })}
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {servicesByCategory[category].map((service) => (
-                    <Card
-                      key={service.id}
-                      className="hover:shadow-lg transition-shadow duration-300"
-                    >
-                      <CardHeader>
-                        <CardTitle className="text-lg">
-                          {service.name}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <CardDescription className="mb-4">
-                          {service.description}
-                        </CardDescription>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          asChild
-                        >
-                          <a href="#contact">Contact for Quote</a>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+            {/* Services grid for selected category */}
+            {selectedCategory && servicesByCategory[selectedCategory] && (
+              <motion.div
+                key={selectedCategory}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+              >
+                {servicesByCategory[selectedCategory].map((service) => (
+                  <Card
+                    key={service.id}
+                    className="hover:shadow-lg transition-shadow duration-300"
+                  >
+                    <CardHeader>
+                      <CardTitle className="text-lg">{service.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="mb-4">
+                        {service.description}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                ))}
               </motion.div>
-            );
-          })
+            )}
+          </>
         ) : (
           <motion.div
             className="flex flex-col items-center justify-center py-16 rounded-lg border border-dashed border-muted-foreground/30 text-muted-foreground"
