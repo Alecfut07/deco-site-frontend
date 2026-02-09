@@ -35,19 +35,29 @@ const Navigation = () => {
 
   useEffect(() => {
     const sections = ["home", "services", "portfolio", "about", "contact"];
-    const observers = sections.map((id) => {
-      const el = document.getElementById(id);
-      if (!el) return null;
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setActiveSection(id);
-        },
-        { threshold: 0.3, rootMargin: "-80px 0px -50% 0px" },
-      );
-      observer.observe(el);
-      return () => observer.disconnect();
-    });
-    return () => observers.forEach((o) => o?.());
+
+    const updateActiveSection = () => {
+      const scrollY = window.scrollY;
+      const offset = 120; // Pixels from top of viewport; adjust for nav height
+
+      let current = "home";
+      for (const id of sections) {
+        const el = document.getElementById(id);
+
+        if (el) {
+          const { top } = el.getBoundingClientRect();
+          // Section is active when its top has passed our offset line
+          if (top <= offset) {
+            current = id;
+          }
+        }
+      }
+      setActiveSection(current);
+    };
+
+    updateActiveSection(); // Run on mount
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    return () => window.removeEventListener("scroll", updateActiveSection);
   }, []);
 
   return (
