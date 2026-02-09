@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { motion } from "motion/react";
 import PortfolioGrid from "./PortfolioGrid";
 import PortfolioModal from "./PortfolioModal";
 import {
@@ -35,7 +36,7 @@ const mapCollectionToOptions = (collection = [], allLabel) => {
       const value = slug || id;
 
       return { label, value };
-    })
+    }),
   );
 };
 
@@ -88,11 +89,11 @@ const PortfolioGallery = () => {
 
   const categoryOptions = useMemo(
     () => mapCollectionToOptions(categoriesData, "All Categories"),
-    [categoriesData]
+    [categoriesData],
   );
   const serviceOptions = useMemo(
     () => mapCollectionToOptions(servicesData, "All Services"),
-    [servicesData]
+    [servicesData],
   );
 
   // Debounce search input - only update searchQuery after user stops typing for 400ms
@@ -130,7 +131,7 @@ const PortfolioGallery = () => {
   const items = useMemo(() => extractItems(activeData), [activeData]);
   const pagination = useMemo(
     () => getPaginationMeta(activeData, page, PAGE_SIZE),
-    [activeData, page]
+    [activeData, page],
   );
 
   const handleClearFilters = () => {
@@ -170,15 +171,20 @@ const PortfolioGallery = () => {
   return (
     <section id="portfolio" className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12 animate-fade-in">
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5 }}
+        >
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Our Work
+            My Work
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Explore transformations across interiors, exteriors, and specialty
-            finishes.
+            Explore my portfolio of completed projects.
           </p>
-        </div>
+        </motion.div>
 
         {/* Filters */}
         <div className="mb-8 space-y-4 animate-fade-in-up">
