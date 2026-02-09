@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Bath, ChefHat, Home, Wrench, Paintbrush, Hammer } from "lucide-react";
 import { motion } from "motion/react";
 import { ServicesSkeleton } from "@/components/SkeletonSection";
+import { cn } from "@/lib/utils";
 import { useServices } from "../services/api";
 
 // Icon mapping for services
@@ -45,7 +47,36 @@ const Services = () => {
     );
   });
 
-  const hasServices = categories.filter(Boolean).length > 0;
+  // Filter out null/undefined categories
+  const categories = [
+    ...new Set(
+      services
+        .filter((s) => s.is_active && s.category?.name)
+        .map((s) => s.category.name),
+    ),
+  ].filter(Boolean);
+
+  const servicesByCategory = {};
+  categories.forEach((cat) => {
+    servicesByCategory[cat] = services.filter(
+      (s) => s.category?.name === cat && s.is_active,
+    );
+  });
+
+  const hasServices = categories.length > 0;
+  const [selectedCategory, setSelectedCategory] = useState(
+    categories[0] ?? null,
+  );
+
+  // Sync selectedCategory when categories load (e.g. after fetch)
+  useEffect(() => {
+    if (categories.length > 0 && !selectedCategory) {
+      setSelectedCategory(categories[0]);
+    }
+    if (categories.legnth > 0 && !categories.includes(selectedCategory)) {
+      setSelectedCategory(categories[0]);
+    }
+  }, [categories, selectedCategory]);
 
   return (
     <section id="services" className="py-20 bg-subtle-gradient">
