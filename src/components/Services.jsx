@@ -25,27 +25,10 @@ const categoryIcons = {
 const Services = () => {
   const { data: servicesData = [], isLoading } = useServices();
 
-  if (isLoading) {
-    return <ServicesSkeleton />;
-  }
-
-  // Handle both array and paginated response formats
+  // Derive data first (empty when loading) so hooks below always see the same structure
   const services = Array.isArray(servicesData)
     ? servicesData
     : servicesData.results || [];
-
-  // Group services by category
-  const categories = [
-    ...new Set(
-      services.filter((s) => s.is_active).map((s) => s.category?.name),
-    ),
-  ];
-  const servicesByCategory = {};
-  categories.forEach((cat) => {
-    servicesByCategory[cat] = services.filter(
-      (s) => s.category?.name === cat && s.is_active,
-    );
-  });
 
   // Filter out null/undefined categories
   const categories = [
@@ -63,7 +46,6 @@ const Services = () => {
     );
   });
 
-  const hasServices = categories.length > 0;
   const [selectedCategory, setSelectedCategory] = useState(
     categories[0] ?? null,
   );
@@ -73,10 +55,17 @@ const Services = () => {
     if (categories.length > 0 && !selectedCategory) {
       setSelectedCategory(categories[0]);
     }
-    if (categories.legnth > 0 && !categories.includes(selectedCategory)) {
+    if (categories.length > 0 && !categories.includes(selectedCategory)) {
       setSelectedCategory(categories[0]);
     }
   }, [categories, selectedCategory]);
+
+  const hasServices = categories.length > 0;
+
+  // Early return only after all hooks have run
+  if (isLoading) {
+    return <ServicesSkeleton />;
+  }
 
   return (
     <section id="services" className="py-20 bg-subtle-gradient">
@@ -99,29 +88,31 @@ const Services = () => {
 
         {hasServices ? (
           <>
-            {/* Category tabs */}
-            <div className="flex flex-wrap justify-center gap-2 mb-10">
-              {categories.map((category) => {
-                const Icon =
-                  categoryIcons[category] || categoryIcons["default"];
-                const isActive = selectedCategory === category;
-                return (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => setSelectedCategory(category)}
-                    className={cn(
-                      "flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all",
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-md"
-                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-                    )}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {category}
-                  </button>
-                );
-              })}
+            {/* Category tabs - horizontal scroll on mobile */}
+            <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+              <div className="flex flex-nowrap sm:flex-wrap justify-start sm:justify-center gap-2 min-w-max sm:min-w-0">
+                {categories.map((category) => {
+                  const Icon =
+                    categoryIcons[category] || categoryIcons["default"];
+                  const isActive = selectedCategory === category;
+                  return (
+                    <button
+                      key={category}
+                      type="button"
+                      onClick={() => setSelectedCategory(category)}
+                      className={cn(
+                        "flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all flex-shrink-0",
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-md"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                      )}
+                    >
+                      <Icon className="w-5 h-5" />
+                      {category}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Services grid for selected category */}
