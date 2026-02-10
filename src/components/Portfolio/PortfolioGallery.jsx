@@ -134,6 +134,14 @@ const PortfolioGallery = () => {
     [activeData, page],
   );
 
+  const resultRange = useMemo(() => {
+    const total = pagination.count ?? 0;
+    if (total === 0) return { start: 0, end: 0, total: 0 };
+    const start = (page - 1) * PAGE_SIZE + 1;
+    const end = Math.min(page * PAGE_SIZE, total);
+    return { start, end, total };
+  }, [page, pagination.count]);
+
   const handleClearFilters = () => {
     setSearchInput("");
     setSearchQuery("");
@@ -256,6 +264,14 @@ const PortfolioGallery = () => {
             )}
           </div>
         </div>
+
+        {/* Result count */}
+        {!isLoading && items.length > 0 && (
+          <p className="mb-4 text-sm text-muted-foreground" aria-live="polite">
+            Showing {resultRange.start}-{resultRange.end} of {resultRange.total}{" "}
+            project{resultRange.total !== 1 ? "s" : ""}
+          </p>
+        )}
 
         {/* Gallery Grid */}
         <div className="relative">
