@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +40,9 @@ const mapCollectionToOptions = (collection = [], allLabel) => {
     }),
   );
 };
+
+const getOptionLabel = (options, value) =>
+  options.find((o) => o.value === value)?.label ?? value;
 
 const extractItems = (payload) => {
   if (!payload) return [];
@@ -268,11 +271,68 @@ const PortfolioGallery = () => {
               </SelectContent>
             </Select>
 
-            {(searchInput || category || service) && (
-              <Button variant="outline" onClick={handleClearFilters}>
-                Clear Filters
-              </Button>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {searchInput && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-sm">
+                  Search: &quot;{searchInput}&quot;
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchInput("");
+                      setSearchQuery("");
+                      setPage(1);
+                    }}
+                    className="rounded-full p-0.5 hover:bg-primary/20"
+                    aria-label={`Remove search filter "${searchInput}"`}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </span>
+              )}
+              {category && category !== "all-categories" && (
+                <span>
+                  {getOptionLabel(categoryOptions, category)}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCategory("");
+                      setPage(1);
+                    }}
+                    className="rounded-full p-0.5 hover:bg-primary/20"
+                    aria-label={`Remove category filter`}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </span>
+              )}
+              {service && service !== "all-services" && (
+                <span>
+                  {getOptionLabel(serviceOptions, service)}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setService("");
+                      setPage(1);
+                    }}
+                    className="rounded-full p-0.5 hover:bg-primary/20"
+                    aria-label={`Remove service filter`}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </span>
+              )}
+
+              {(searchInput || category || service) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-8 text-muted-foreground"
+                >
+                  Clear all
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
