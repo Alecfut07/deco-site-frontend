@@ -33,6 +33,32 @@ export const ServicesSkeleton = () => (
   </section>
 );
 
+export const PortfolioGallerySkeleton = () => (
+  <section id="portfolio" className="py-20 bg-background">
+    <div className="container mx-auto px-4">
+      <div className="text-center mb-12 space-y-4">
+        <Skeleton className="h-12 w-48 mx-auto" />
+        <Skeleton className="h-6 w-80 mx-auto" />
+      </div>
+      <div className="mb-8 flex flex-col sm:flex-row gap-4">
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 w-40" />
+        <Skeleton className="h-10 w-40" />
+      </div>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="space-y-3">
+            <Skeleton className="aspect-square rounded-lg" />
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
 export const AboutSkeleton = () => (
   <section className="py-20 bg-subtle-gradient">
     <div className="container mx-auto px-4">
