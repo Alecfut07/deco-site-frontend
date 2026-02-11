@@ -363,14 +363,29 @@ const PortfolioGallery = () => {
               )}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <p className="text-xl text-muted-foreground mb-4">
-                No projects found with the current filters.
+            <motion.div
+              className="flex flex-col items-center justify-center py-20 px-6 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-4 flex h-16 items-center justify-center rounded-full bg-muted">
+                <Search className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="text-lg font-medium text-muted-foreground">
+                No projects found
+              </p>
+              <p className="text-sm text-muted-foreground text-center max-w-sm mb-6">
+                {searchInput || category || service
+                  ? "Try adjusting your search or filters to see more results."
+                  : "There are no portfolio items yet. Check back later."}
               </p>
               <Button variant="outline" onClick={handleClearFilters}>
-                Reset Filters
+                {searchInput || category || service
+                  ? "Clear filters"
+                  : "Refresh"}
               </Button>
-            </div>
+            </motion.div>
           )}
         </div>
 
