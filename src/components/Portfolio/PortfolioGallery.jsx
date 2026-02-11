@@ -119,6 +119,7 @@ const PortfolioGallery = () => {
     isLoading: filteredLoading,
     isFetching: filteredFetching,
     error: filteredError,
+    refetch: refetchFiltered,
   } = useSearchAndFilter(searchQuery, category, service, page, PAGE_SIZE);
 
   const {
@@ -126,6 +127,7 @@ const PortfolioGallery = () => {
     isLoading: baseLoading,
     isFetching: baseFetching,
     error: baseError,
+    refetch: refetchBase,
   } = usePortfolioItems(page, PAGE_SIZE, { enabled: !hasFilters });
 
   const activeData = hasFilters ? filteredData : baseData;
@@ -173,17 +175,25 @@ const PortfolioGallery = () => {
     }, 0);
   };
 
+  const handleRetry = () => {
+    if (hasFilters) refetchFiltered();
+    else refetchBase();
+  };
+
   if (error) {
     return (
       <section id="portfolio" className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-6 py-8 text-center">
             <p className="text-lg font-semibold text-destructive">
-              We couldn't load the portfolio right now.
+              We couldn&apos;t load the portfolio right now.
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-muted-foreground mb-6">
               Please try again in a moment or refresh the page.
             </p>
+            <Button variant="outline" onClick={handleRetry}>
+              Try again
+            </Button>
           </div>
         </div>
       </section>
