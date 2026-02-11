@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Video } from "lucide-react";
+import { motion } from "motion/react";
 
 const getCoverImage = (item) => {
   // Priority: thumbnail_url > gallery_image_url > image_url
@@ -31,8 +32,8 @@ const getCoverImage = (item) => {
 
 const PortfolioGrid = ({ items = [], onItemClick }) => {
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-fade-in">
-      {items.map((item) => {
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {items.map((item, index) => {
         const coverImage = getCoverImage(item);
         const hasOnlyVideos =
           !coverImage && item?.videos && item.videos.length > 0;
@@ -42,79 +43,86 @@ const PortfolioGrid = ({ items = [], onItemClick }) => {
         const videoCount = item?.videos?.length ?? 0;
 
         return (
-          <Card
+          <motion.div
             key={item.id}
-            className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl"
-            onClick={() => onItemClick?.(item)}
-            tabIndex={0}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onItemClick?.(item);
-              }
-            }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: index * 0.05 }}
+            className="h-full"
           >
-            <div className="relative aspect-square overflow-hidden">
-              {coverImage ? (
-                <img
-                  src={coverImage}
-                  alt={item.title}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                  loading="lazy"
-                />
-              ) : hasOnlyVideos ? (
-                <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground relative">
-                  <Video className="w-16 h-16 opacity-50" />
-                  {videoCount > 0 && (
-                    <Badge
-                      className="absolute bottom-2 right-2"
-                      variant="secondary"
-                    >
-                      {videoCount} video{videoCount > 1 ? "s" : ""}
-                    </Badge>
-                  )}
-                </div>
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
-                  No media
-                </div>
-              )}
+            <Card
+              className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl h-full"
+              onClick={() => onItemClick?.(item)}
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onItemClick?.(item);
+                }
+              }}
+            >
+              <div className="relative aspect-square overflow-hidden">
+                {coverImage ? (
+                  <img
+                    src={coverImage}
+                    alt={item.title}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                ) : hasOnlyVideos ? (
+                  <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground relative">
+                    <Video className="w-16 h-16 opacity-50" />
+                    {videoCount > 0 && (
+                      <Badge
+                        className="absolute bottom-2 right-2"
+                        variant="secondary"
+                      >
+                        {videoCount} video{videoCount > 1 ? "s" : ""}
+                      </Badge>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+                    No media
+                  </div>
+                )}
 
-              {item?.has_before_after && (
-                <Badge className="absolute right-2 top-2 bg-accent text-xs uppercase tracking-wide">
-                  Before / After
-                </Badge>
-              )}
+                {item?.has_before_after && (
+                  <Badge className="absolute right-2 top-2 bg-accent text-xs uppercase tracking-wide">
+                    Before / After
+                  </Badge>
+                )}
 
-              {imageCount > 1 && (
-                <Badge
-                  variant="secondary"
-                  className="absolute left-2 top-2 text-xs"
-                >
-                  {imageCount} photos
-                </Badge>
-              )}
-            </div>
-
-            <CardContent className="p-5">
-              <h3 className="mb-1 line-clamp-1 text-lg font-semibold text-foreground">
-                {item.title}
-              </h3>
-              <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
-                {item.description}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary" className="text-xs">
-                  {categoryLabel}
-                </Badge>
-                {item?.service && (
-                  <Badge variant="outline" className="text-xs">
-                    {item?.service?.name ?? item.service}
+                {imageCount > 1 && (
+                  <Badge
+                    variant="secondary"
+                    className="absolute left-2 top-2 text-xs"
+                  >
+                    {imageCount} photos
                   </Badge>
                 )}
               </div>
-            </CardContent>
-          </Card>
+
+              <CardContent className="p-5">
+                <h3 className="mb-1 line-clamp-1 text-lg font-semibold text-foreground">
+                  {item.title}
+                </h3>
+                <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+                  {item.description}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {categoryLabel}
+                  </Badge>
+                  {item?.service && (
+                    <Badge variant="outline" className="text-xs">
+                      {item?.service?.name ?? item.service}
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         );
       })}
     </div>
