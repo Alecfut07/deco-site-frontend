@@ -20,7 +20,7 @@ import { usePortfolioItem } from "@/services/api";
 
 const normalizeMedia = (collection = []) =>
   [...collection].sort(
-    (a, b) => (a?.display_order ?? 0) - (b?.display_order ?? 0)
+    (a, b) => (a?.display_order ?? 0) - (b?.display_order ?? 0),
   );
 
 const PortfolioModal = ({ item, onClose }) => {
@@ -31,6 +31,8 @@ const PortfolioModal = ({ item, onClose }) => {
   const videoRef = useRef(null);
   const [videoLoading, setVideoLoading] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const closeButtonRef = useRef(null);
+  const previouslyFocusedRef = useRef(null);
 
   // Fetch fresh data when modal opens to get latest videos/images
   const { data: freshItem, isLoading } = usePortfolioItem(item.id);
@@ -40,11 +42,11 @@ const PortfolioModal = ({ item, onClose }) => {
 
   const pictures = useMemo(
     () => normalizeMedia(currentItem?.pictures),
-    [currentItem?.pictures]
+    [currentItem?.pictures],
   );
   const videos = useMemo(
     () => normalizeMedia(currentItem?.videos),
-    [currentItem?.videos]
+    [currentItem?.videos],
   );
 
   useEffect(() => {
@@ -78,7 +80,7 @@ const PortfolioModal = ({ item, onClose }) => {
     setVideoLoading(true);
     setCurrentVideoIndex(index);
     setPlayingVideo(
-      videos[index] ? videos[index].id ?? videos[index].video_url : null
+      videos[index] ? (videos[index].id ?? videos[index].video_url) : null,
     );
   };
 
@@ -86,7 +88,7 @@ const PortfolioModal = ({ item, onClose }) => {
     setCurrentVideoIndex((prev) => {
       const next = prev > 0 ? prev - 1 : videos.length - 1;
       setPlayingVideo(
-        videos[next] ? videos[next].id ?? videos[next].video_url : null
+        videos[next] ? (videos[next].id ?? videos[next].video_url) : null,
       );
       return next;
     });
@@ -96,7 +98,7 @@ const PortfolioModal = ({ item, onClose }) => {
     setCurrentVideoIndex((prev) => {
       const next = prev < videos.length - 1 ? prev + 1 : 0;
       setPlayingVideo(
-        videos[next] ? videos[next].id ?? videos[next].video_url : null
+        videos[next] ? (videos[next].id ?? videos[next].video_url) : null,
       );
       return next;
     });
@@ -148,6 +150,18 @@ const PortfolioModal = ({ item, onClose }) => {
     onClose,
   ]);
 
+  useEffect(() => {
+    if (item) {
+      previouslyFocusedRef.current = document.activeElement;
+      requestAnimationFrame(() => {
+        closeButtonRef.current?.focus?.();
+      });
+    }
+    return () => {
+      previouslyFocusedRef.current?.focus?.();
+    };
+  }, [item]);
+
   const currentImage = pictures[currentImageIndex];
 
   // Show loading state while fetching fresh data
@@ -166,7 +180,7 @@ const PortfolioModal = ({ item, onClose }) => {
   }
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open={true} onOpenChange={onClose} ref={closeButtonRef}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold text-foreground">
