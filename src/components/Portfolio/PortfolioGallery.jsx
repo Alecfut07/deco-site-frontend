@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -82,6 +82,7 @@ const PortfolioGallery = () => {
   const [service, setService] = useState("");
   const [page, setPage] = useState(1);
   const [selectedItem, setSelectedItem] = useState(null);
+  const gridTopRef = useRef(null);
 
   // Fetch data
   const { data: categoriesData = [] } = useCategories();
@@ -152,11 +153,20 @@ const PortfolioGallery = () => {
 
   const handlePageChange = (direction) => {
     setPage((prev) => {
-      if (direction === "next" && pagination.has_next) return prev + 1;
-      if (direction === "prev" && pagination.has_previous)
-        return Math.max(1, prev - 1);
-      return prev;
+      const next =
+        direction === "next" && pagination.has_next
+          ? prev + 1
+          : direction === "prev" && pagination.has_previous
+            ? Math.max(1, prev - 1)
+            : prev;
+      return next;
     });
+    setTimeout(() => {
+      gridTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
   };
 
   if (error) {
@@ -274,7 +284,7 @@ const PortfolioGallery = () => {
         )}
 
         {/* Gallery Grid */}
-        <div className="relative">
+        <div ref={gridTopRef} className="relative scroll-mt-24">
           {isLoading && !items.length ? (
             // Initial load - show full loading spinner
             <div className="text-center py-16">
