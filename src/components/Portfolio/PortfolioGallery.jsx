@@ -400,27 +400,76 @@ const PortfolioGallery = () => {
         </div>
 
         {/* Pagination */}
-        {pagination.total_pages > 1 && (
-          <div className="mt-10 flex items-center justify-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => handlePageChange("prev")}
-              disabled={!pagination.has_previous}
-              aria-label="Previous page"
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Page {pagination.page} of {pagination.total_pages}
-            </span>
-            <Button
-              variant="outline"
-              onClick={() => handlePageChange("next")}
-              disabled={!pagination.has_next}
-              aria-label="Next page"
-            >
-              Next
-            </Button>
+        {(pagination.total_pages > 1 || items.length > 0) && (
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <p className="text-sm text-muted-foreground order-2 sm:order-1">
+              {pagination.count > 0
+                ? `Showing ${resultRange.start}-${resultRange.end} of ${resultRange.total}`
+                : "No results"}
+            </p>
+            {pagination.total_pages > 1 && (
+              <div className="flex items-center gap-2 order-1 sm:order-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setPage(1);
+                    setTimeout(
+                      () =>
+                        gridTopRef.current?.scrollIntoView?.({
+                          behavior: "smooth",
+                          block: "start",
+                        }),
+                      0,
+                    );
+                  }}
+                  disabled={!pagination.has_previous || pagination.page === 1}
+                  aria-label="First page"
+                >
+                  First
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handlePageChange("prev")}
+                  disabled={!pagination.has_previous}
+                  aria-label="Previous page"
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground min-w-[100px] text-center">
+                  Page {pagination.page} of {pagination.total_pages}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => handlePageChange("next")}
+                  disabled={!pagination.has_next}
+                  aria-label="Next page"
+                >
+                  Next
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setPage(pagination.total_pages);
+                    setTimeout(
+                      () =>
+                        gridTopRef.current?.scrollIntoView?.({
+                          behavior: "smooth",
+                          block: "start",
+                        }),
+                      0,
+                    );
+                  }}
+                  disabled={
+                    !pagination.has_next ||
+                    pagination.page === pagination.total_pages
+                  }
+                  aria-label="Last page"
+                >
+                  Last
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>
