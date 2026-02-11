@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PortfolioGallerySkeleton } from "@/components/SkeletonSection";
 import { motion } from "motion/react";
 import PortfolioGrid from "./PortfolioGrid";
 import PortfolioModal from "./PortfolioModal";
@@ -286,11 +287,7 @@ const PortfolioGallery = () => {
         {/* Gallery Grid */}
         <div ref={gridTopRef} className="relative scroll-mt-24">
           {isLoading && !items.length ? (
-            // Initial load - show full loading spinner
-            <div className="text-center py-16">
-              <div className="inline-block animate-spin rounded-full h-9 w-9 border-b-2 border-primary" />
-              <p className="mt-4 text-muted-foreground">Loading portfolio...</p>
-            </div>
+            <PortfolioGallerySkeleton />
           ) : items.length ? (
             // Show grid with loading overlay if fetching new data
             <div className="relative">
