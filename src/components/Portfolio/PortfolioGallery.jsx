@@ -221,7 +221,7 @@ const PortfolioGallery = () => {
         {/* Filters */}
         <a
           href="#portfolio-results"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+          className="sr-only focus:fixed focus:left-4 focus:top-20 focus:z-[100] focus:rounded focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-none"
         >
           Skip to portfolio results
         </a>
@@ -413,12 +413,14 @@ const PortfolioGallery = () => {
         {(pagination.total_pages > 1 || items.length > 0) && (
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <p className="text-sm text-muted-foreground order-2 sm:order-1">
-              {pagination.count > 0
+              {pagination.count > 0 && items.length > 0
                 ? `Showing ${resultRange.start}-${resultRange.end} of ${resultRange.total}`
-                : "No results"}
+                : items.length > 0
+                  ? `Showing ${resultRange.start}-${resultRange.end} of ${resultRange.total}`
+                  : "No results"}
             </p>
             {pagination.total_pages > 1 && (
-              <div className="flex items-center gap-2 order-1 sm:order-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button
                   variant="outline"
                   size="sm"

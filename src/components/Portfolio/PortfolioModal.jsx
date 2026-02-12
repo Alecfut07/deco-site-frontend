@@ -153,13 +153,14 @@ const PortfolioModal = ({ item, onClose }) => {
   useEffect(() => {
     if (item) {
       previouslyFocusedRef.current = document.activeElement;
-      requestAnimationFrame(() => {
-        closeButtonRef.current?.focus?.();
+      const timer = requestAnimationFrame(() => {
+        const closeBtn = document.querySelector("[data-dialog-close]");
+        if (closeBtn) closeBtn.focus();
       });
+      return () => {
+        previouslyFocusedRef.current?.focus?.();
+      };
     }
-    return () => {
-      previouslyFocusedRef.current?.focus?.();
-    };
   }, [item]);
 
   const currentImage = pictures[currentImageIndex];
