@@ -306,7 +306,7 @@ const PortfolioGallery = () => {
                 </span>
               )}
               {category && category !== "all-categories" && (
-                <span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-sm">
                   {getOptionLabel(categoryOptions, category)}
                   <button
                     type="button"
@@ -322,7 +322,7 @@ const PortfolioGallery = () => {
                 </span>
               )}
               {service && service !== "all-services" && (
-                <span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-sm">
                   {getOptionLabel(serviceOptions, service)}
                   <button
                     type="button"
