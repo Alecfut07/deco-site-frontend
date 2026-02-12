@@ -54,7 +54,7 @@ const PortfolioGrid = ({ items = [], onItemClick }) => {
             className="h-full"
           >
             <Card
-              className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl h-full"
+              className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl h-full focus-visible:ring-2 focus-visible:ring-ring focus:ring-offset-2"
               onClick={() => onItemClick?.(item)}
               tabIndex={0}
               onKeyDown={(event) => {
