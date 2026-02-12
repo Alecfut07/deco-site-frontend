@@ -219,6 +219,12 @@ const PortfolioGallery = () => {
         </motion.div>
 
         {/* Filters */}
+        <a
+          href="#portfolio-results"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+        >
+          Skip to portfolio results
+        </a>
         <div className="mb-8 space-y-4 animate-fade-in-up">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -355,7 +361,11 @@ const PortfolioGallery = () => {
         )}
 
         {/* Gallery Grid */}
-        <div ref={gridTopRef} className="relative scroll-mt-24">
+        <div
+          id="portfolio-results"
+          ref={gridTopRef}
+          className="relative scroll-mt-24"
+        >
           {isLoading && !items.length ? (
             <PortfolioGallerySkeleton />
           ) : items.length ? (
