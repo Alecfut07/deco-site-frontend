@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Video } from "lucide-react";
@@ -31,6 +32,8 @@ const getCoverImage = (item) => {
 };
 
 const PortfolioGrid = ({ items = [], onItemClick }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((item, index) => {
@@ -67,9 +70,15 @@ const PortfolioGrid = ({ items = [], onItemClick }) => {
                     <img
                       src={coverImage}
                       alt={item.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${
+                        imageLoaded ? "opacity-100" : "opacity-0"
+                      }`}
                       loading="lazy"
+                      onLoad={() => setImageLoaded(true)}
                     />
+                    {!imageLoaded && (
+                      <div className="absolute inset-0 animate-pulse bg-muted" />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <span className="rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-foreground shadow-lg">
