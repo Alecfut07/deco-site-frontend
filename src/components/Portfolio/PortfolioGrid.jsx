@@ -56,6 +56,8 @@ const PortfolioGrid = ({ items = [], onItemClick }) => {
             <Card
               className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl h-full focus-visible:ring-2 focus-visible:ring-ring focus:ring-offset-2"
               onClick={() => onItemClick?.(item)}
+              role="button"
+              aria-label={`View ${item.title}, ${categoryLabel}`}
               tabIndex={0}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
