@@ -256,11 +256,13 @@ const PortfolioGallery = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-categories">All Categories</SelectItem>
-                {categoryOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
+                {categoryOptions
+                  .filter((o) => o.value !== "all")
+                  .map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
 
@@ -279,11 +281,13 @@ const PortfolioGallery = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-services">All Services</SelectItem>
-                {serviceOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
+                {serviceOptions
+                  .filter((o) => o.value !== "all")
+                  .map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
 
