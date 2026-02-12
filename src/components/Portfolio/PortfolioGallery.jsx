@@ -64,16 +64,16 @@ const getPaginationMeta = (payload, currentPage, pageSize) => {
     };
   }
 
-  if (payload.pagination) return payload.pagination;
-
-  const count = payload.count ?? extractItems(payload).length;
-  const totalPages = count ? Math.max(1, Math.ceil(count / pageSize)) : 1;
+  const p = payload.pagination || payload;
+  const count = p.total_items ?? p.count ?? extractItems(payload).length;
+  const totalPages = p.total_pages ?? (count ? Math.ceil(count / pageSize) : 1);
+  const page = p.current_page ?? p.page ?? currentPage;
 
   return {
-    page: payload.page ?? currentPage,
-    page_size: payload.page_size ?? pageSize,
-    has_next: payload.has_next ?? (payload.page ?? currentPage) < totalPages,
-    has_previous: payload.has_previous ?? (payload.page ?? currentPage) > 1,
+    page,
+    page_size: p.page_size ?? pageSize,
+    has_next: p.has_next ?? page < totalPages,
+    has_previous: p.has_previous ?? page > 1,
     total_pages: totalPages,
     count,
   };
