@@ -66,7 +66,7 @@ const PortfolioGrid = ({ items = [], onItemClick }) => {
                 }
               }}
             >
-              <div className="relative aspect-square overflow-hidden">
+              <div className="relative aspect-[4/5] overflow-hidden">
                 {coverImage ? (
                   <>
                     <img
