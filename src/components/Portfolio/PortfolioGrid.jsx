@@ -111,20 +111,23 @@ const PortfolioGrid = ({ items = [], onItemClick }) => {
                   </div>
                 )}
 
-                {item?.has_before_after && (
-                  <Badge className="absolute right-2 top-2 bg-accent text-xs uppercase tracking-wide">
-                    Before / After
-                  </Badge>
-                )}
-
-                {imageCount > 1 && (
-                  <Badge
-                    variant="secondary"
-                    className="absolute left-2 top-2 text-xs"
-                  >
-                    {imageCount} photos
-                  </Badge>
-                )}
+                <div className="absolute left-0 right-0 top-0 z-10 flex flex-wrap gap-2 p-3">
+                  {item?.has_before_after && (
+                    <span className="rounded-full bg-accent/95 px-3 py-1 text-xs font-medium uppercase tracking-wide text-accent-foreground shadow-sm backdrop-blur-sm">
+                      Before / After
+                    </span>
+                  )}
+                  {imageCount > 1 && (
+                    <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                      {imageCount} photos
+                    </span>
+                  )}
+                  {videoCount > 0 && (
+                    <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                      {videoCount} video{videoCount > 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <CardContent className="p-5">
