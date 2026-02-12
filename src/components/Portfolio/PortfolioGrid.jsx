@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Video } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 const getCoverImage = (item) => {
   // Priority: thumbnail_url > gallery_image_url > image_url
@@ -34,6 +34,8 @@ const getCoverImage = (item) => {
 const PortfolioGrid = ({ items = [], onItemClick }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((item, index) => {
@@ -48,9 +50,12 @@ const PortfolioGrid = ({ items = [], onItemClick }) => {
         return (
           <motion.div
             key={item.id}
-            initial={{ opacity: 0, y: 16 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.05 }}
+            transition={{
+              duration: prefersReducedMotion ? 0 : 0.4,
+              delay: prefersReducedMotion ? 0 : index * 0.05,
+            }}
             className="h-full"
           >
             <Card
