@@ -44,10 +44,10 @@ const About = () => {
               <img
                 src={unclePhoto}
                 alt="Ortega Reyes - Professional remodeling and restoration"
-                className="w-64 h-64 md:w-80 md:h-80 rounded-2xl object-cover shadow-lg"
+                className="w-64 h-64 md:w-80 md:h-80 rounded-full object-cover shadow-lg ring-4 ring-primary"
               />
             ) : (
-              <div className="w-64 h-64 md:w-80 md:h-80 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-primary/10 flex items-center justify-center ring-4 ring-primary">
                 <span className="text-6xl font-bold text-primary/30">OR</span>
               </div>
             )}
