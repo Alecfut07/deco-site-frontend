@@ -1,5 +1,5 @@
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
 
 // Configure base URL - adjust this to match Django backend
 const API_BASE_URL =
@@ -23,7 +23,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Add response interceptor to handle auth errors
@@ -36,7 +36,7 @@ api.interceptors.response.use(
       window.location.href = "/login";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // Helper function to get full image URL
@@ -46,21 +46,85 @@ export const getImageUrl = (path) => {
   return `${API_BASE_URL}${path}`;
 };
 
-// Portfolio Items API with TanStack Query
-export const usePortfolioItems = (page = 1, pageSize = 12, options = {}) => {
-  const enabled = options.enabled ?? true;
+// =============== Plain API functions (axios) ==================
+export const fetchPortfolioItems = (page = 1, pageSize = 12) =>
+  api
+    .get(`/api/portfolio-items/?page=${page}&page_size=${pageSize}`)
+    .then((r) => r.data);
 
-  return useQuery({
-    queryKey: ["portfolio-items", page, pageSize],
-    queryFn: async () => {
-      const response = await api.get(
-        `/api/portfolio-items/?page=${page}&page_size=${pageSize}`
-      );
-      return response.data;
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes (matches backend cache)
-    keepPreviousData: true,
-    enabled,
+export const fetchPortfolioItem = (id) =>
+  api.get(`/api/portfolio-items/${id}/`).then((r) => r.data);
+
+export const fetchSearchAndFilter = (
+  query,
+  category,
+  service,
+  page = 1,
+  pageSize = 12,
+) => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    page_size: pageSize.toString(),
+  });
+  if (query) params.append("q", query);
+  if (category) params.append("category", category);
+  if (service) params.append("service", service);
+  return api
+    .get(`/api/portfolio-items/combined/?${params}`)
+    .then((r) => r.data);
+};
+
+export const fetchCategories = () =>
+  api.get("/api/categories/").then((r) => r.data);
+
+export const fetchServices = () =>
+  api.get("/api/services/").then((r) => r.data);
+
+export const fetchBusinessInfo = () =>
+  api.get("/api/business-info/").then((r) => r.data);
+
+// =============== Custom Hooks (useState + useEffect) ==================
+
+const useFetch = (fetcher, deps = [], options = {}) => {
+  const [data, setData] = useState(options.initialData ?? null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const refetch = useCallback(async () => {
+    if (options.enabled === false) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await fetcher();
+      setData(result);
+      return result;
+    } catch (err) {
+      setError(err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, deps);
+
+  useEffect(() => {
+    refetch();
+  }, deps);
+
+  return { data, isLoading, error, refetch };
+};
+
+// Portfolio Items API with TanStack Query
+export const usePortfolioItems = (page = 1, pageSize = 12, opts = {}) => {
+  const fetcher = useCallback(
+    () => fetchPortfolioItems(page, pageSize),
+    [page, pageSize],
+  );
+  return useFetch(fetcher, [page, pageSize], {
+    ...opts,
+    initialData: opts.enabled === false ? [] : null,
   });
 };
 
@@ -82,8 +146,8 @@ export const useSearchPortfolioItems = (query, page = 1, pageSize = 12) => {
     queryFn: async () => {
       const response = await api.get(
         `/api/portfolio-items/search/?q=${encodeURIComponent(
-          query
-        )}&page=${page}&page_size=${pageSize}`
+          query,
+        )}&page=${page}&page_size=${pageSize}`,
       );
       return response.data;
     },
@@ -98,7 +162,7 @@ export const useFilterPortfolio = (
   category,
   service,
   page = 1,
-  pageSize = 12
+  pageSize = 12,
 ) => {
   return useQuery({
     queryKey: ["portfolio-filter", category, service, page, pageSize],
@@ -111,7 +175,7 @@ export const useFilterPortfolio = (
       if (service) params.append("service", service);
 
       const response = await api.get(
-        `/api/portfolio-items/filter/?${params.toString()}`
+        `/api/portfolio-items/filter/?${params.toString()}`,
       );
       return response.data;
     },
@@ -127,27 +191,18 @@ export const useSearchAndFilter = (
   category,
   service,
   page = 1,
-  pageSize = 12
+  pageSize = 12,
 ) => {
-  return useQuery({
-    queryKey: ["portfolio-combined", query, category, service, page, pageSize],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        page_size: pageSize.toString(),
-      });
-      if (query) params.append("q", query);
-      if (category) params.append("category", category);
-      if (service) params.append("service", service);
-
-      const response = await api.get(
-        `/api/portfolio-items/combined/?${params.toString()}`
-      );
-      return response.data;
-    },
-    enabled: !!query || !!category || !!service,
-    staleTime: 2 * 60 * 1000,
-    keepPreviousData: true,
+  const enabled = !!query || !!category || !!service;
+  const fetcher = useCallback(
+    () => fetchSearchAndFilter(query, category, service, page, pageSize),
+    [query, category, service, page, pageSize],
+  );
+  return useFetch(fetcher, [query, category, service, page, pageSize], {
+    enabled,
+    initialData: enabled
+      ? null
+      : { results: [], portfolio_items: [], pagination: {} },
   });
 };
 
