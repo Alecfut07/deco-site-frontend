@@ -1,18 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
-
-// Token storage helper
-const getToken = () => {
-  return localStorage.getItem("family_member_token");
-};
-
-// Helper to get auth headers
-const getAuthHeaders = (additionalHeaders = {}) => {
-  const token = getToken();
-  return {
-    ...additionalHeaders,
-    ...(token && { Authorization: `Token ${token}` }),
-  };
-};
+import { api as axiosApi } from "@/services/api";
 
 export class ApiError extends Error {
   constructor(status, message, data) {
@@ -22,161 +8,165 @@ export class ApiError extends Error {
   }
 }
 
-const apiRequest = async (endpoint, options = {}) => {
-  // Merge auth headers with any provided headers
-  const headers = {
-    ...getAuthHeaders(options.headers || {}),
-    ...(options.headers || {}),
-  };
+const handleResponse = (response) => response.data;
 
-  // Remove Content-Type from headers if body is FormData (browser will set it with boundary)
-  if (options.body instanceof FormData) {
-    delete headers["Content-Type"];
-  } else if (!headers["Content-Type"]) {
-    headers["Content-Type"] = "application/json";
+const handleError = (error) => {
+  if (error.response?.status === 401 || error.response?.status === 403) {
+    return Promise.reject(error);
   }
-
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (response.status === 401 || response.status === 403) {
-    // Clear token on auth failure
-    localStorage.removeItem("family_member_token");
-    window.location.href = "/login";
-    throw new ApiError(response.status, "Unauthorized");
-  }
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new ApiError(
-      response.status,
-      error.detail || "Request failed",
-      error
-    );
-  }
-
-  return response.json();
+  throw new ApiError(
+    error.response?.status || 500,
+    error.response?.data?.detail || "Request failed",
+    error.response?.data,
+  );
 };
 
 export const api = {
   getPortfolioItems: (params) =>
-    apiRequest(`/api/admin/portfolio-items/${params ? `?${params}` : ""}`),
+    axiosApi
+      .get(`/api/admin/portfolio-items/${params ? `?${params}` : ""}`)
+      .then(handleResponse)
+      .catch(handleError),
 
-  getPortfolioItem: (id) => apiRequest(`/api/admin/portfolio-items/${id}/`),
+  getPortfolioItem: (id) =>
+    axiosApi
+      .get(`/api/admin/portfolio-items/${id}/`)
+      .then(handleResponse)
+      .catch(handleError),
 
   createPortfolioItem: (formData) =>
-    apiRequest("/api/admin/portfolio-items/", {
-      method: "POST",
-      body: formData,
-    }),
+    axiosApi
+      .post("/api/admin/portfolio-items/", formData, {
+        headers:
+          formData instanceof FormData
+            ? undefined
+            : { "Content-Type": "application/json" },
+      })
+      .then(handleResponse)
+      .catch(handleError),
 
   updatePortfolioItem: (id, formData) =>
-    apiRequest(`/api/admin/portfolio-items/${id}/`, {
-      method: "PATCH",
-      body: formData,
-    }),
+    axiosApi
+      .patch(`/api/admin/portfolio-items/${id}/`, formData, {
+        headers:
+          formData instanceof FormData
+            ? undefined
+            : { "Content-Type": "application/json" },
+      })
+      .then(handleResponse)
+      .catch(handleError),
 
   deletePortfolioItem: (id) =>
-    apiRequest(`/api/admin/portfolio-items/${id}/`, {
-      method: "DELETE",
-    }),
+    axiosApi
+      .delete(`/api/admin/portfolio-items/${id}/`)
+      .then(handleResponse)
+      .catch(handleError),
 
   createPortfolioImage: (formData) =>
-    apiRequest("/api/admin/portfolio-images/", {
-      method: "POST",
-      body: formData,
-    }),
+    axiosApi
+      .post("/api/admin/portfolio-images/", formData)
+      .then(handleResponse)
+      .catch(handleError),
 
   updatePortfolioImage: (id, formData) =>
-    apiRequest(`/api/admin/portfolio-images/${id}/`, {
-      method: "PATCH",
-      body: formData,
-    }),
+    axiosApi
+      .patch(`/api/admin/portfolio-images/${id}/`, formData)
+      .then(handleResponse)
+      .catch(handleError),
 
   deletePortfolioImage: (id) =>
-    apiRequest(`/api/admin/portfolio-images/${id}/`, {
-      method: "DELETE",
-    }),
+    axiosApi
+      .delete(`/api/admin/portfolio-images/${id}/`)
+      .then(handleResponse)
+      .catch(handleError),
 
   createPortfolioVideo: (formData) =>
-    apiRequest("/api/admin/portfolio-videos/", {
-      method: "POST",
-      body: formData,
-    }),
+    axiosApi
+      .post("/api/admin/portfolio-videos/", formData)
+      .then(handleResponse)
+      .catch(handleError),
 
   updatePortfolioVideo: (id, formData) =>
-    apiRequest(`/api/admin/portfolio-videos/${id}/`, {
-      method: "PATCH",
-      body: formData,
-    }),
+    axiosApi
+      .patch(`/api/admin/portfolio-videos/${id}/`, formData)
+      .then(handleResponse)
+      .catch(handleError),
 
   deletePortfolioVideo: (id) =>
-    apiRequest(`/api/admin/portfolio-videos/${id}/`, {
-      method: "DELETE",
-    }),
+    axiosApi
+      .delete(`/api/admin/portfolio-videos/${id}/`)
+      .then(handleResponse)
+      .catch(handleError),
 
-  getCategories: () => apiRequest("/api/categories/"),
+  getCategories: () =>
+    axiosApi.get("/api/categories/").then(handleResponse).catch(handleError),
 
   getAdminCategories: (params) =>
-    apiRequest(`/api/admin/categories/${params ? `?${params}` : ""}`),
+    axiosApi
+      .get(`/api/admin/categories/${params ? `?${params}` : ""}`)
+      .then(handleResponse)
+      .catch(handleError),
 
   createCategory: (data) =>
-    apiRequest("/api/admin/categories/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    }),
+    axiosApi
+      .post("/api/admin/categories/", data)
+      .then(handleResponse)
+      .catch(handleError),
 
   updateCategory: (id, data) =>
-    apiRequest(`/api/admin/categories/${id}/`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    }),
+    axiosApi
+      .patch(`/api/admin/categories/${id}/`, data)
+      .then(handleResponse)
+      .catch(handleError),
 
   deleteCategory: (id) =>
-    apiRequest(`/api/admin/categories/${id}/`, {
-      method: "DELETE",
-    }),
+    axiosApi
+      .delete(`/api/admin/categories/${id}/`)
+      .then(handleResponse)
+      .catch(handleError),
 
-  getServices: () => apiRequest("/api/services/"),
+  getServices: () =>
+    axiosApi.get("/api/services/").then(handleResponse).catch(handleError),
 
   getAdminServices: (params) =>
-    apiRequest(`/api/admin/services/${params ? `?${params}` : ""}`),
+    axiosApi
+      .get(`/api/admin/services/${params ? `?${params}` : ""}`)
+      .then(handleResponse)
+      .catch(handleError),
 
   createService: (data) =>
-    apiRequest("/api/admin/services/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    }),
+    axiosApi
+      .post("/api/admin/services/", data)
+      .then(handleResponse)
+      .catch(handleError),
 
   updateService: (id, data) =>
-    apiRequest(`/api/admin/services/${id}/`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    }),
+    axiosApi
+      .patch(`/api/admin/services/${id}/`, data)
+      .then(handleResponse)
+      .catch(handleError),
 
   deleteService: (id) =>
-    apiRequest(`/api/admin/services/${id}/`, {
-      method: "DELETE",
-    }),
+    axiosApi
+      .delete(`/api/admin/services/${id}/`)
+      .then(handleResponse)
+      .catch(handleError),
 
-  getBusinessInfo: () => apiRequest("/api/business-info/"),
+  getBusinessInfo: () =>
+    axiosApi.get("/api/business-info/").then(handleResponse).catch(handleError),
 
   getAdminBusinessInfo: async () => {
-    const data = await apiRequest("/api/admin/business-info/");
+    const data = await axiosApi
+      .get("/api/admin/business-info/")
+      .then(handleResponse)
+      .catch(handleError);
     // Handle array response - return first item if array, otherwise return data as-is
     return Array.isArray(data) && data.length > 0 ? data[0] : data;
   },
 
   updateBusinessInfo: (data) =>
-    apiRequest("/api/admin/business-info/", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    }),
+    axiosApi
+      .patch("/api/admin/business-info/", data)
+      .then(handleResponse)
+      .catch(handleError),
 };
