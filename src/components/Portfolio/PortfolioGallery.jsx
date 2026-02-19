@@ -41,6 +41,22 @@ const mapCollectionToOptions = (collection = [], allLabel) => {
   );
 };
 
+const mapCollectionToFilterOptions = (collection = [], allLabel) => {
+  const items = Array.isArray(collection)
+    ? collection
+    : collection?.results || [];
+
+  return [{ label: allLabel, value: "" }].concat(
+    items
+      .map((entry) => {
+        const label = entry?.name ?? entry?.title ?? "Unnamed";
+        const value = entry?.id != null ? String(entry.id) : "";
+        return value ? { label, value } : null;
+      })
+      .filter(Boolean),
+  );
+};
+
 const getOptionLabel = (options, value) =>
   options.find((o) => o.value === value)?.label ?? value;
 
@@ -93,11 +109,11 @@ const PortfolioGallery = () => {
   const { data: servicesData = [] } = useServices();
 
   const categoryOptions = useMemo(
-    () => mapCollectionToOptions(categoriesData, "All Categories"),
+    () => mapCollectionToFilterOptions(categoriesData, "All Categories"),
     [categoriesData],
   );
   const serviceOptions = useMemo(
-    () => mapCollectionToOptions(servicesData, "All Services"),
+    () => mapCollectionToFilterOptions(servicesData, "All Services"),
     [servicesData],
   );
 
@@ -244,7 +260,9 @@ const PortfolioGallery = () => {
             <Select
               value={category || "all-categories"}
               onValueChange={(value) => {
-                setCategory(value === "all-categories" ? "" : value);
+                setCategory(
+                  value === "all-categories" || value === "" ? "" : value,
+                );
                 setPage(1);
               }}
             >
@@ -257,7 +275,7 @@ const PortfolioGallery = () => {
               <SelectContent>
                 <SelectItem value="all-categories">All Categories</SelectItem>
                 {categoryOptions
-                  .filter((o) => o.value !== "all")
+                  .filter((o) => o.value !== "")
                   .map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -269,7 +287,9 @@ const PortfolioGallery = () => {
             <Select
               value={service || "all-services"}
               onValueChange={(value) => {
-                setService(value === "all-services" ? "" : value);
+                setService(
+                  value === "all-services" || value === "" ? "" : value,
+                );
                 setPage(1);
               }}
             >
@@ -282,7 +302,7 @@ const PortfolioGallery = () => {
               <SelectContent>
                 <SelectItem value="all-services">All Services</SelectItem>
                 {serviceOptions
-                  .filter((o) => o.value !== "all")
+                  .filter((o) => o.value !== "")
                   .map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
