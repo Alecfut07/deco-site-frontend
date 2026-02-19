@@ -169,3 +169,4 @@ export const useBusinessInfo = () => {
 };
 
 export default api;
+export { api };
