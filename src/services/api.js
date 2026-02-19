@@ -155,17 +155,17 @@ export const useSearchAndFilter = (
 
 // Categories API
 export const useCategories = () => {
-  useFetch(useCallback(fetchCategories, []), []);
+  return useFetch(useCallback(fetchCategories, []), []);
 };
 
 // Services API
 export const useServices = () => {
-  useFetch(useCallback(fetchServices, []), []);
+  return useFetch(useCallback(fetchServices, []), []);
 };
 
 // Business Info API
 export const useBusinessInfo = () => {
-  useFetch(useCallback(fetchBusinessInfo, []), []);
+  return useFetch(useCallback(fetchBusinessInfo, []), []);
 };
 
 export default api;
