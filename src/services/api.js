@@ -86,12 +86,13 @@ export const fetchBusinessInfo = () =>
 // =============== Custom Hooks (useState + useEffect) ==================
 
 const useFetch = (fetcher, deps = [], options = {}) => {
-  const [data, setData] = useState(options.initialData ?? null);
+  const { enabled = true, initialData = null } = options;
+  const [data, setData] = useState(initialData);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const refetch = useCallback(async () => {
-    if (options.enabled === false) {
+    if (enabled === false) {
       setIsLoading(false);
       return;
     }
@@ -107,82 +108,31 @@ const useFetch = (fetcher, deps = [], options = {}) => {
     } finally {
       setIsLoading(false);
     }
-  }, deps);
+  }, [enabled, fetcher]);
 
   useEffect(() => {
+    if (enabled === false) {
+      setData(initialData);
+      setIsLoading(false);
+      return;
+    }
     refetch();
-  }, deps);
+  }, [enabled, refetch]);
 
   return { data, isLoading, error, refetch };
 };
 
-// Portfolio Items API with TanStack Query
 export const usePortfolioItems = (page = 1, pageSize = 12, opts = {}) => {
   const fetcher = useCallback(
     () => fetchPortfolioItems(page, pageSize),
     [page, pageSize],
   );
-  return useFetch(fetcher, [page, pageSize], {
-    ...opts,
-    initialData: opts.enabled === false ? [] : null,
-  });
+  return useFetch(fetcher, [page, pageSize], opts);
 };
 
 export const usePortfolioItem = (id) => {
-  return useQuery({
-    queryKey: ["portfolio_item", id],
-    queryFn: async () => {
-      const response = await api.get(`/api/portfolio-items/${id}/`);
-      return response.data;
-    },
-    enabled: !!id,
-  });
-};
-
-// Search functionality
-export const useSearchPortfolioItems = (query, page = 1, pageSize = 12) => {
-  return useQuery({
-    queryKey: ["portfolio-search", query, page, pageSize],
-    queryFn: async () => {
-      const response = await api.get(
-        `/api/portfolio-items/search/?q=${encodeURIComponent(
-          query,
-        )}&page=${page}&page_size=${pageSize}`,
-      );
-      return response.data;
-    },
-    enabled: !!query && query.length > 2,
-    staleTime: 2 * 60 * 1000,
-    keepPreviousData: true,
-  });
-};
-
-// Filter by category
-export const useFilterPortfolio = (
-  category,
-  service,
-  page = 1,
-  pageSize = 12,
-) => {
-  return useQuery({
-    queryKey: ["portfolio-filter", category, service, page, pageSize],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        page_size: pageSize.toString(),
-      });
-      if (category) params.append("category", category);
-      if (service) params.append("service", service);
-
-      const response = await api.get(
-        `/api/portfolio-items/filter/?${params.toString()}`,
-      );
-      return response.data;
-    },
-    enabled: !!category || !!service,
-    staleTime: 5 * 60 * 1000,
-    keepPreviousData: true,
-  });
+  const fetcher = useCallback(() => fetchPortfolioItem(id), [id]);
+  return useFetch(fetcher, [id], { enabled: !!id });
 };
 
 // Combined search and filter
@@ -200,46 +150,22 @@ export const useSearchAndFilter = (
   );
   return useFetch(fetcher, [query, category, service, page, pageSize], {
     enabled,
-    initialData: enabled
-      ? null
-      : { results: [], portfolio_items: [], pagination: {} },
   });
 };
 
 // Categories API
 export const useCategories = () => {
-  return useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const response = await api.get("/api/categories/");
-      return response.data;
-    },
-    staleTime: 30 * 60 * 1000, // 30 minutes
-  });
+  useFetch(useCallback(fetchCategories, []), []);
 };
 
 // Services API
 export const useServices = () => {
-  return useQuery({
-    queryKey: ["services"],
-    queryFn: async () => {
-      const response = await api.get("/api/services/");
-      return response.data;
-    },
-    staleTime: 30 * 60 * 1000, // 30 minutes - services don't change often
-  });
+  useFetch(useCallback(fetchServices, []), []);
 };
 
 // Business Info API
 export const useBusinessInfo = () => {
-  return useQuery({
-    queryKey: ["business-info"],
-    queryFn: async () => {
-      const response = await api.get(`/api/business-info/`);
-      return response.data;
-    },
-    staleTime: 60 * 60 * 1000, // 1 hour
-  });
+  useFetch(useCallback(fetchBusinessInfo, []), []);
 };
 
 export default api;
