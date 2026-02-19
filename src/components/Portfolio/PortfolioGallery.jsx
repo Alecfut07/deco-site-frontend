@@ -50,7 +50,7 @@ const mapCollectionToFilterOptions = (collection = [], allLabel) => {
     items
       .map((entry) => {
         const label = entry?.name ?? entry?.title ?? "Unnamed";
-        const value = entry?.id != null ? String(entry.id) : "";
+        const value = label.trim();
         return value ? { label, value } : null;
       })
       .filter(Boolean),
