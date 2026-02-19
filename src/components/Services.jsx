@@ -23,12 +23,12 @@ const categoryIcons = {
 };
 
 const Services = () => {
-  const { data: servicesData = [], isLoading } = useServices();
+  const { data: servicesData, isLoading } = useServices();
 
   // Derive data first (empty when loading) so hooks below always see the same structure
   const services = Array.isArray(servicesData)
     ? servicesData
-    : servicesData.results || [];
+    : (servicesData?.results ?? []);
 
   // Filter out null/undefined categories
   const categories = [
