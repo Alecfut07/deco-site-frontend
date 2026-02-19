@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { api as axiosApi } from "@/services/api";
 import { AuthContext } from "./createAuthContext";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 // Token storage helpers
 const TOKEN_KEY = "family_member_token";
@@ -43,70 +41,43 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/user/`, {
-        method: "GET",
-        headers: getAuthHeaders(),
-      });
-
-      if (response.ok) {
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          const data = await response.json();
-          setUser(data);
-        } else {
-          console.warn("Auth check returned non-JSON response");
-          setUser(null);
-          setToken(null);
-        }
-      } else if (response.status === 403 || response.status === 401) {
-        // Token is invalid or expired
+      const { data } = await axiosApi.get(`/api/auth/user/`);
+      setUser(data);
+    } catch (error) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
         setUser(null);
         setToken(null);
       } else {
         setUser(null);
         setToken(null);
       }
-    } catch (error) {
-      console.error("Failed to verify session", error);
-      setUser(null);
-      setToken(null);
     } finally {
       setLoading(false);
     }
   };
 
   const login = async (username, password) => {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const { data } = await axiosApi.post(`/api/auth/login/`, {
+        username,
+        password,
+      });
 
-    if (!response.ok) {
-      const contentType = response.headers.get("content-type");
-      let error;
-      if (contentType && contentType.includes("application/json")) {
-        error = await response.json().catch(() => ({}));
-      } else {
-        error = { detail: "Login failed" };
+      // Store the token
+      if (data.token) {
+        setToken(data.token);
       }
-      throw new Error(error.detail || "Login failed");
-    }
 
-    const data = await response.json();
-
-    // Store the token
-    if (data.token) {
-      setToken(data.token);
-    }
-
-    // Set user data
-    if (data.user) {
-      setUser(data.user);
-    } else {
-      // If user data not in response, fetch it
-      await checkAuth();
+      // Set user data
+      if (data.user) {
+        setUser(data.user);
+      } else {
+        // If user data not in response, fetch it
+        await checkAuth();
+      }
+    } catch (error) {
+      const message = error.response?.data?.detail || "Login failed";
+      throw new Error(message);
     }
   };
 
@@ -114,10 +85,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = getToken();
       if (token) {
-        await fetch(`${API_BASE_URL}/api/auth/logout/`, {
-          method: "POST",
-          headers: getAuthHeaders(),
-        });
+        await axiosApi.post(
+          `/api/auth/logout/`,
+          {},
+          { headers: getAuthHeaders() },
+        );
       }
     } catch (error) {
       console.warn("Logout network error (ignored): ", error);
@@ -135,7 +107,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = useMemo(
     () => ({ user, loading, login, logout, checkAuth, getAuthHeaders }),
-    [user, loading]
+    [user, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
