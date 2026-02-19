@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthContext";
+import { ProtectedRoute } from "@/components/admin/ProtectedRoute";
+import AdminLayout from "@/components/admin/AdminLayout";
+import Index from "@/pages/Index";
+import Login from "@/pages/Login";
+import NotFound from "@/pages/NotFound";
+import Dashboard from "@/pages/admin/Dashboard";
+import PortfolioItems from "@/pages/admin/PortfolioItems";
+import PortfolioItemForm from "@/pages/admin/PortfolioItemForm";
+import PortfolioItemMedia from "@/pages/admin/PortfolioItemMedia";
+import Categories from "@/pages/admin/Categories";
+import Services from "@/pages/admin/Services";
+import BusinessInfo from "@/pages/admin/BusinessInfo";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
 
-export default App
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="portfolio" element={<PortfolioItems />} />
+            <Route path="portfolio/new" element={<PortfolioItemForm />} />
+            <Route path="portfolio/:id" element={<PortfolioItemForm />} />
+            <Route
+              path="portfolio/:id/media"
+              element={<PortfolioItemMedia />}
+            />
+            <Route path="categories" element={<Categories />} />
+            <Route path="services" element={<Services />} />
+            <Route path="business" element={<BusinessInfo />} />
+          </Route>
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+};
+
+export default App;

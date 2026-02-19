@@ -1,0 +1,11 @@
+services:
+  deco_site_frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:80"
+    container_name: deco_site_frontend
+    environment:
+      - NODE_ENV=production
