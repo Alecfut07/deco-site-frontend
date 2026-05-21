@@ -52,6 +52,21 @@ const ALLOWED_VIDEO_TYPES = [
   "video/x-msvideo",
 ];
 
+const formatApiError = (error) => {
+  const data = error?.data ?? error?.response?.data;
+  if (!data) return "Failed to save portfolio item.";
+
+  if (typeof data.detail === "string") return data.detail;
+  if (Array.isArray(data.detail)) return data.detail.join(" ");
+
+  // Field errors: { title: ["..."], category_id: ["..."] }
+  const parts = Object.entries(data).flatMap(([field, messages]) => {
+    const list = Array.isArray(messages) ? messages : [String(messages)];
+    return list.map((m) => `${field}: ${m}`);
+  });
+  return parts.length ? parts.join(" ") : "Failed to save portfolio item.";
+};
+
 const formatFileSize = (bytes) => {
   if (bytes === 0) return "0 bytes";
   const k = 1024;
@@ -71,7 +86,7 @@ const validateImageFile = (file) => {
     return {
       valid: false,
       error: `File size exceeds ${formatFileSize(
-        MAX_FILE_SIZE
+        MAX_FILE_SIZE,
       )}. Please select a smaller file.`,
     };
   }
@@ -91,7 +106,7 @@ const validateVideoFile = (file) => {
     return {
       valid: false,
       error: `File size exceeds ${formatFileSize(
-        MAX_VIDEO_SIZE
+        MAX_VIDEO_SIZE,
       )}. Please select a smaller file.`,
     };
   }
@@ -126,7 +141,7 @@ const ImageUploadField = ({
       const img = new window.Image();
       img.onload = () => {
         setFileInfo((prev) =>
-          prev ? { ...prev, dimensions: `${img.width} x ${img.height}` } : null
+          prev ? { ...prev, dimensions: `${img.width} x ${img.height}` } : null,
         );
       };
       img.src = url;
@@ -151,7 +166,7 @@ const ImageUploadField = ({
       }
       onFileChange(selectedFile);
     },
-    [onFileChange]
+    [onFileChange],
   );
 
   const handleInputChange = (e) => {
@@ -615,13 +630,13 @@ const PortfolioItemForm = () => {
             category_id: item.category?.id
               ? String(item.category.id)
               : item.category_id
-              ? String(item.category_id)
-              : "",
+                ? String(item.category_id)
+                : "",
             service_id: item.service?.id
               ? String(item.service.id)
               : item.service_id
-              ? String(item.service_id)
-              : "",
+                ? String(item.service_id)
+                : "",
             is_before_after:
               item.is_before_after || item.has_before_after || false,
             image: null,
@@ -853,10 +868,15 @@ const PortfolioItemForm = () => {
     try {
       const data = new FormData();
       data.append("title", formData.title);
-      data.append("description", formData.description);
-      data.append("category_id", formData.category_id);
-      data.append("service_id", formData.service_id);
-      data.append("is_before_after", formData.is_before_after.toString());
+      data.append("description", formData.description || "");
+      data.append("category_id", String(Number(formData.category_id)));
+      if (formData.service_id) {
+        data.append("service_id", String(Number(formData.service_id)));
+      }
+      data.append(
+        "is_before_after",
+        formData.is_before_after ? "true" : "false",
+      );
 
       if (formData.image) data.append("image", formData.image);
       if (formData.before_image)
@@ -887,9 +907,14 @@ const PortfolioItemForm = () => {
 
       navigate("/admin/portfolio");
     } catch (error) {
+      console.error(
+        "Create portfolio item failed: ",
+        error?.response?.data ?? error?.data,
+      );
+
       notify({
         title: "Error",
-        description: error?.data?.detail || "Failed to save portfolio item.",
+        description: formatApiError(error),
         variant: "destructive",
       });
     } finally {

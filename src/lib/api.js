@@ -37,10 +37,7 @@ export const api = {
   createPortfolioItem: (formData) =>
     axiosApi
       .post("/api/admin/portfolio-items/", formData, {
-        headers:
-          formData instanceof FormData
-            ? undefined
-            : { "Content-Type": "application/json" },
+        headers: { "Content-Type": undefined },
       })
       .then(handleResponse)
       .catch(handleError),
@@ -48,10 +45,7 @@ export const api = {
   updatePortfolioItem: (id, formData) =>
     axiosApi
       .patch(`/api/admin/portfolio-items/${id}/`, formData, {
-        headers:
-          formData instanceof FormData
-            ? undefined
-            : { "Content-Type": "application/json" },
+        headers: { "Content-Type": undefined },
       })
       .then(handleResponse)
       .catch(handleError),
