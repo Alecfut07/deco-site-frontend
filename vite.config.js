@@ -13,6 +13,12 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.js"],
+    css: true,
+  },
   server: {
     port: 3000,
     host: true, // This allows Docker to acces the dev server
