@@ -1,7 +1,9 @@
-import { defineConfig } from 'vite'
-import path from 'path'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+/// <reference types="vitest/config" />
+
+import { defineConfig } from "vite";
+import path from "path";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -18,5 +20,5 @@ export default defineConfig({
   preview: {
     port: 3000,
     host: true, // This allows Docker to access the preview server
-  }
+  },
 });
