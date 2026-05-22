@@ -316,7 +316,7 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
         {/* Before Image (Top Layer with Clip) */}
         <div
           className="absolute inset-0 h-full w-full overflow-hidden transition-all duration-100"
-          style={{ clipPath: `inset(0 ${100 - position[0]}% 0 0)` }}
+          style={{ clipPath: `inset(0 ${position[0]}% 0 0)` }}
         >
           <img
             ref={beforeImgRef}
