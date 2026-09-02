@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import BeforeAfterSlider from "./BeforeAfterSlider";
+import BeforeAfterSlider from "../BeforeAfterSlider";
 
 describe("BeforeAfterSlider", () => {
   it("renders Before and After labels", () => {

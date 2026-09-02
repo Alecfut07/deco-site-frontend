@@ -6,4 +6,14 @@ export function renderWithRouter(ui, { route = "/" } = {}) {
   return render(<BrowserRouter>{ui}</BrowserRouter>);
 }
 
-export * from "@testing-library/react";
+export {
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+  act,
+  cleanup,
+  renderHook,
+} from "@testing-library/react";
+
+export { default as userEvent } from "@testing-library/user-event";

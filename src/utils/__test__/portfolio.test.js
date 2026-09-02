@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractItems, getPaginationMeta } from "./portfolio";
+import { extractItems, getPaginationMeta } from "../portfolio";
 
 describe("extractItems", () => {
   it("returns empty array for null payload", () => {
