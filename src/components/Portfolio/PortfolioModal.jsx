@@ -170,6 +170,7 @@ const PortfolioModal = ({ item, onClose }) => {
     return (
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent className="max-w-5xl">
+          <DialogTitle className="sr-only">Loading portfolio item</DialogTitle>
           <div className="flex items-center justify-center py-12">
             <div className="text-muted-foreground">
               Loading portfolio data...

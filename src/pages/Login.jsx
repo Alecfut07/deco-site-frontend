@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
+import { useBusinessInfo } from "@/services/api";
 import { notify } from "@/utils/notify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import {
 
 const Login = () => {
   const { user, loading, login } = useAuth();
+  const { data: businessInfo } = useBusinessInfo();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -52,9 +54,13 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 to-muted p-4">
+      <Card className="w-full max-w-md border-t-4 border-t-primary">
         <CardHeader className="space-y-1">
+          <p className="text-sm font-semibold uppercase tracking-wide text-primary">
+            {businessInfo?.company_name ||
+              "Ortega Reyes Remodeling and Restoration"}
+          </p>
           <CardTitle className="text-2xl font-bold">Family Login</CardTitle>
           <CardDescription>
             Enter your credentials to access the admin panel.
