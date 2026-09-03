@@ -86,26 +86,23 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
     [isDragging, updatePosition],
   );
 
-  // keyboard controls
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (!containerRef.current) return;
-
-      // Only handle if slider container is focused or visible
-      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-        const step = e.shiftKey ? 5 : 1; // Bigger steps with Shift
-        setPosition((prev) => {
-          const newPos =
-            e.key === "ArrowLeft"
-              ? Math.max(0, prev[0] - step)
-              : Math.min(100, prev[0] + step);
-          return [newPos];
-        });
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+  // Keyboard controls for the divider handle, scoped to its own focus
+  // (not a page-wide listener) per the WAI-ARIA slider pattern.
+  const handleHandleKeyDown = useCallback((e) => {
+    const step = e.shiftKey ? 5 : 1;
+    if (e.key === "ArrowLeft") {
+      setPosition((prev) => [Math.max(0, prev[0] - step)]);
+      e.preventDefault();
+    } else if (e.key === "ArrowRight") {
+      setPosition((prev) => [Math.min(100, prev[0] + step)]);
+      e.preventDefault();
+    } else if (e.key === "Home") {
+      setPosition([0]);
+      e.preventDefault();
+    } else if (e.key === "End") {
+      setPosition([100]);
+      e.preventDefault();
+    }
   }, []);
 
   // Global mouse/touch event listeners
@@ -358,13 +355,15 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
         {/* Divider Line with Handle */}
         <div
           ref={sliderRef}
-          className={`absolute top-0 bottom-0 w-1 cursor-ew-resize bg-white shadow-2xl z-20 transition-transform ${
+          className={`absolute top-0 bottom-0 w-1 cursor-ew-resize bg-white shadow-2xl z-20 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             isDragging ? "scale-110" : "scale-100"
           }`}
           style={{ left: `${position[0]}%` }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
+          onKeyDown={handleHandleKeyDown}
           role="slider"
+          tabIndex={0}
           aria-valuenow={position[0]}
           aria-valuemin={0}
           aria-valuemax={100}

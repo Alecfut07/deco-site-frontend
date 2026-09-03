@@ -7,6 +7,7 @@ export function renderWithRouter(ui, { route = "/" } = {}) {
 }
 
 export {
+  render,
   screen,
   fireEvent,
   waitFor,
